@@ -12,9 +12,17 @@ import (
 )
 
 type Update struct {
-	UpdateID     int64         `json:"update_id"`
-	MyChatMember *ChatMemberUp `json:"my_chat_member"`
-	Message      *Message      `json:"message"`
+	UpdateID      int64          `json:"update_id"`
+	MyChatMember  *ChatMemberUp  `json:"my_chat_member"`
+	Message       *Message       `json:"message"`
+	CallbackQuery *CallbackQuery `json:"callback_query"`
+}
+
+type CallbackQuery struct {
+	ID      string   `json:"id"`
+	From    User     `json:"from"`
+	Message *Message `json:"message"`
+	Data    string   `json:"data"`
 }
 
 type ChatMemberUp struct {
@@ -76,7 +84,7 @@ func StartPolling(bot models.Bot) {
 }
 
 func getUpdates(token string, offset int64) ([]Update, error) {
-	url := fmt.Sprintf("https://api.telegram.org/bot%s/getUpdates?offset=%d&timeout=30&allowed_updates=[\"my_chat_member\",\"message\"]", token, offset)
+	url := fmt.Sprintf("https://api.telegram.org/bot%s/getUpdates?offset=%d&timeout=30&allowed_updates=[\"my_chat_member\",\"message\",\"callback_query\"]", token, offset)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -103,6 +111,12 @@ func getUpdates(token string, offset int64) ([]Update, error) {
 func handleUpdate(bot models.Bot, update Update) {
 	if update.MyChatMember != nil {
 		handleMyChatMember(bot, update.MyChatMember)
+	}
+	if update.Message != nil && update.Message.Chat.Type == "private" {
+		handlePrivateMessage(bot, update.Message)
+	}
+	if update.CallbackQuery != nil {
+		handleCallbackQuery(bot, update.CallbackQuery)
 	}
 }
 
