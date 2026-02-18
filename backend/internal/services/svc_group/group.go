@@ -1,20 +1,18 @@
 package svc_group
 
 import (
+	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
+	"github.com/Lavina-Tech-LLC/feedbackbot/internal/services"
 	lvn "github.com/Lavina-Tech-LLC/lavinagopackage/v2"
 	"github.com/gin-gonic/gin"
 )
 
 func GetGroups(c *gin.Context) {
-	tenantID := c.Query("tenant_id")
-	if tenantID == "" {
-		c.Data(lvn.Res(400, "", "tenant_id is required"))
-		return
-	}
+	tenantID := services.GetTenantID(c)
 
 	var groups []models.Group
-	models.DB.Where("tenant_id = ?", tenantID).Find(&groups)
+	models.DB.Scopes(db.TenantScope(tenantID)).Find(&groups)
 
 	c.Data(lvn.Res(200, groups, ""))
 }
