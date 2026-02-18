@@ -1,6 +1,6 @@
 import { createRootRoute, createRoute, Outlet } from '@tanstack/react-router';
 import { Navbar } from '@/components/shared';
-import { SetupPage, BotConfigPage } from '@/components/pageComponents';
+import { SetupPage, BotConfigPage, GroupsPage } from '@/components/pageComponents';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -29,4 +29,10 @@ const botSettingsRoute = createRoute({
   component: BotConfigPage,
 });
 
-export const routeTree = rootRoute.addChildren([indexRoute, setupRoute, botSettingsRoute]);
+const groupsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/groups',
+  component: GroupsPage,
+});
+
+export const routeTree = rootRoute.addChildren([indexRoute, setupRoute, botSettingsRoute, groupsRoute]);

@@ -19,6 +19,9 @@ export function Navbar() {
         <Anchor component={Link} to="/settings/bot">
           {t('nav.bots')}
         </Anchor>
+        <Anchor component={Link} to="/groups">
+          {t('nav.groups')}
+        </Anchor>
       </Group>
     </Group>
   );

@@ -25,9 +25,22 @@
     "name": "Nomi",
     "deleteConfirm": "Bu botni o'chirishni xohlaysizmi?"
   },
+  "groups": {
+    "title": "Guruhlar",
+    "name": "Guruh nomi",
+    "type": "Turi",
+    "status": "Faol",
+    "actions": "Amallar",
+    "empty": "Hali guruhlar yo'q. Botni Telegram guruhiga qo'shing.",
+    "configTitle": "Guruh sozlamalari",
+    "postToGroup": "Fikrni guruhga joylash",
+    "forumTopicId": "Forum mavzu ID",
+    "forumTopicIdHint": "Oddiy guruhlar uchun bo'sh qoldiring"
+  },
   "nav": {
     "setup": "Sozlash",
     "settings": "Sozlamalar",
-    "bots": "Botlar"
+    "bots": "Botlar",
+    "groups": "Guruhlar"
   }
 }
