@@ -1,0 +1,33 @@
+{
+  "common": {
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "loading": "Yuklanmoqda...",
+    "success": "Muvaffaqiyatli",
+    "error": "Xatolik"
+  },
+  "setup": {
+    "title": "Tashkilotni sozlash",
+    "orgName": "Tashkilot nomi",
+    "orgSlug": "Tashkilot identifikatori",
+    "orgSlugHint": "Tashkilotingiz uchun yagona identifikator",
+    "createOrg": "Tashkilot yaratish"
+  },
+  "bot": {
+    "title": "Bot sozlamalari",
+    "token": "Bot tokeni",
+    "tokenHint": "@BotFather dan tokenni oling",
+    "addBot": "Bot qo'shish",
+    "verified": "Tasdiqlangan",
+    "notVerified": "Tasdiqlanmagan",
+    "username": "Foydalanuvchi nomi",
+    "name": "Nomi",
+    "deleteConfirm": "Bu botni o'chirishni xohlaysizmi?"
+  },
+  "nav": {
+    "setup": "Sozlash",
+    "settings": "Sozlamalar",
+    "bots": "Botlar"
+  }
+}
