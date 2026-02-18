@@ -1,0 +1,44 @@
+package svc_tenant
+
+import (
+	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
+	lvn "github.com/Lavina-Tech-LLC/lavinagopackage/v2"
+	"github.com/gin-gonic/gin"
+)
+
+type createTenantReq struct {
+	Name string `json:"name" binding:"required"`
+	Slug string `json:"slug" binding:"required"`
+}
+
+func CreateTenant(c *gin.Context) {
+	var req createTenantReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Data(lvn.Res(400, "", "Invalid request: "+err.Error()))
+		return
+	}
+
+	tenant := models.Tenant{
+		Name: req.Name,
+		Slug: req.Slug,
+	}
+
+	if err := models.DB.Create(&tenant).Error; err != nil {
+		lvn.GinErr(c, 500, err, "Failed to create tenant")
+		return
+	}
+
+	c.Data(lvn.Res(201, tenant, ""))
+}
+
+func GetTenant(c *gin.Context) {
+	id := c.Param("id")
+
+	var tenant models.Tenant
+	if err := models.DB.First(&tenant, id).Error; err != nil {
+		c.Data(lvn.Res(404, "", "Tenant not found"))
+		return
+	}
+
+	c.Data(lvn.Res(200, tenant, ""))
+}
