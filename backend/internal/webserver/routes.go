@@ -2,6 +2,7 @@ package webServer
 
 import (
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/config"
+	"github.com/Lavina-Tech-LLC/feedbackbot/internal/services/svc_group"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/services/svc_tenant"
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +20,12 @@ func setRoutes(router *gin.Engine) {
 	bots.POST("", svc_tenant.CreateBot)
 	bots.GET("/:id", svc_tenant.GetBot)
 	bots.DELETE("/:id", svc_tenant.DeleteBot)
+
+	groups := router.Group("/groups")
+	groups.GET("", svc_group.GetGroups)
+	groups.GET("/:id", svc_group.GetGroup)
+	groups.PATCH("/:id", svc_group.UpdateGroup)
+	groups.PATCH("/:id/config", svc_group.UpdateGroupConfig)
 }
 
 func Listen() {

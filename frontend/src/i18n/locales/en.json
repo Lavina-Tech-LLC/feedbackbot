@@ -25,9 +25,22 @@
     "name": "Name",
     "deleteConfirm": "Are you sure you want to delete this bot?"
   },
+  "groups": {
+    "title": "Groups",
+    "name": "Group Name",
+    "type": "Type",
+    "status": "Active",
+    "actions": "Actions",
+    "empty": "No groups yet. Add the bot to a Telegram group to see it here.",
+    "configTitle": "Group Settings",
+    "postToGroup": "Post feedback to group",
+    "forumTopicId": "Forum Topic ID",
+    "forumTopicIdHint": "Leave empty for non-forum groups"
+  },
   "nav": {
     "setup": "Setup",
     "settings": "Settings",
-    "bots": "Bots"
+    "bots": "Bots",
+    "groups": "Groups"
   }
 }
