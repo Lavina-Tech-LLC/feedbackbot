@@ -37,10 +37,23 @@
     "forumTopicId": "ID темы форума",
     "forumTopicIdHint": "Оставьте пустым для обычных групп"
   },
+  "feedbacks": {
+    "title": "Отзывы",
+    "selectGroup": "Выберите группу",
+    "selectGroupPlaceholder": "Выберите группу для просмотра отзывов",
+    "all": "Все",
+    "public": "Публичные",
+    "adminOnly": "Только для админа",
+    "adminOnlyBadge": "Только для админа",
+    "publicBadge": "Публичный",
+    "posted": "Опубликован",
+    "empty": "Отзывов пока нет."
+  },
   "nav": {
     "setup": "Настройка",
     "settings": "Настройки",
     "bots": "Боты",
-    "groups": "Группы"
+    "groups": "Группы",
+    "feedbacks": "Отзывы"
   }
 }

@@ -22,6 +22,9 @@ export function Navbar() {
         <Anchor component={Link} to="/groups">
           {t('nav.groups')}
         </Anchor>
+        <Anchor component={Link} to="/feedbacks">
+          {t('nav.feedbacks')}
+        </Anchor>
       </Group>
     </Group>
   );
