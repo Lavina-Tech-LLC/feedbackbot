@@ -47,7 +47,9 @@
     "adminOnlyBadge": "Только для админа",
     "publicBadge": "Публичный",
     "posted": "Опубликован",
-    "empty": "Отзывов пока нет."
+    "empty": "Отзывов пока нет.",
+    "dateRange": "Диапазон дат",
+    "dateRangePlaceholder": "Выберите диапазон дат"
   },
   "nav": {
     "setup": "Настройка",

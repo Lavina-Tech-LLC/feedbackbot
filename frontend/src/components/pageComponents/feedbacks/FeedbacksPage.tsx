@@ -13,16 +13,19 @@ import {
   Pagination,
   Select,
 } from '@mantine/core';
-import { IconLock, IconWorld } from '@tabler/icons-react';
+import { DatePickerInput } from '@mantine/dates';
+import { IconLock, IconWorld, IconCalendar } from '@tabler/icons-react';
 import { useGetFeedbacks } from '@/service/feedback';
 import { useGetGroups } from '@/service/group';
 import type { Feedback } from '@/types';
+import '@mantine/dates/styles.css';
 
 export function FeedbacksPage() {
   const { t } = useTranslation();
   const [selectedGroup, setSelectedGroup] = useState('');
   const [filter, setFilter] = useState('all');
   const [page, setPage] = useState(1);
+  const [dateRange, setDateRange] = useState<[Date | string | null, Date | string | null]>([null, null]);
 
   const { data: groupsData } = useGetGroups('1'); // TODO: from auth context
   const groups = (groupsData as { data: { ID: number; title: string }[] } | undefined)?.data ?? [];
@@ -32,12 +35,13 @@ export function FeedbacksPage() {
     adminOnly: filter === 'admin_only' ? 'true' : filter === 'public' ? 'false' : undefined,
     page,
     limit: 20,
+    dateFrom: dateRange[0] ? new Date(dateRange[0]).toISOString() : undefined,
+    dateTo: dateRange[1] ? new Date(dateRange[1]).toISOString() : undefined,
   });
 
   const feedbacks: Feedback[] =
     (feedbackData as { data: { data: Feedback[]; total: number } } | undefined)?.data?.data ?? [];
-  const total =
-    (feedbackData as { data: { total: number } } | undefined)?.data?.total ?? 0;
+  const total = (feedbackData as { data: { total: number } } | undefined)?.data?.total ?? 0;
   const totalPages = Math.ceil(total / 20);
 
   return (
@@ -46,16 +50,31 @@ export function FeedbacksPage() {
         <Stack>
           <Title order={2}>{t('feedbacks.title')}</Title>
 
-          <Select
-            label={t('feedbacks.selectGroup')}
-            placeholder={t('feedbacks.selectGroupPlaceholder')}
-            data={groups.map((g) => ({ value: String(g.ID), label: g.title }))}
-            value={selectedGroup}
-            onChange={(v) => {
-              setSelectedGroup(v ?? '');
-              setPage(1);
-            }}
-          />
+          <Group grow>
+            <Select
+              label={t('feedbacks.selectGroup')}
+              placeholder={t('feedbacks.selectGroupPlaceholder')}
+              data={groups.map((g) => ({ value: String(g.ID), label: g.title }))}
+              value={selectedGroup}
+              onChange={(v) => {
+                setSelectedGroup(v ?? '');
+                setPage(1);
+              }}
+            />
+
+            <DatePickerInput
+              type="range"
+              label={t('feedbacks.dateRange')}
+              placeholder={t('feedbacks.dateRangePlaceholder')}
+              value={dateRange}
+              onChange={(v) => {
+                setDateRange(v);
+                setPage(1);
+              }}
+              clearable
+              leftSection={<IconCalendar size={16} />}
+            />
+          </Group>
 
           {selectedGroup && (
             <SegmentedControl
