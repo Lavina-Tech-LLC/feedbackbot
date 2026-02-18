@@ -1,0 +1,33 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error"
+  },
+  "setup": {
+    "title": "Setup Organization",
+    "orgName": "Organization Name",
+    "orgSlug": "Organization Slug",
+    "orgSlugHint": "Unique identifier for your org",
+    "createOrg": "Create Organization"
+  },
+  "bot": {
+    "title": "Bot Configuration",
+    "token": "Bot Token",
+    "tokenHint": "Get your bot token from @BotFather",
+    "addBot": "Add Bot",
+    "verified": "Verified",
+    "notVerified": "Not Verified",
+    "username": "Username",
+    "name": "Name",
+    "deleteConfirm": "Are you sure you want to delete this bot?"
+  },
+  "nav": {
+    "setup": "Setup",
+    "settings": "Settings",
+    "bots": "Bots"
+  }
+}

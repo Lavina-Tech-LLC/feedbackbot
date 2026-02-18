@@ -1,0 +1,38 @@
+{
+  "name": "feedbackbot-admin",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@mantine/core": "^8.0.0",
+    "@mantine/hooks": "^8.0.0",
+    "@mantine/form": "^8.0.0",
+    "@mantine/notifications": "^8.0.0",
+    "@reduxjs/toolkit": "^2.5.0",
+    "@tabler/icons-react": "^3.30.0",
+    "@tanstack/react-query": "^5.60.0",
+    "@tanstack/react-router": "^1.100.0",
+    "axios": "^1.7.0",
+    "i18next": "^24.0.0",
+    "js-cookie": "^3.0.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-i18next": "^15.0.0",
+    "react-redux": "^9.2.0"
+  },
+  "devDependencies": {
+    "@types/js-cookie": "^3.0.6",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "eslint": "^9.0.0",
+    "typescript": "~5.7.0",
+    "vite": "^6.0.0"
+  }
+}
