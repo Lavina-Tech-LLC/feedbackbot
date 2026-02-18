@@ -35,6 +35,16 @@ export interface FeedbackConfig {
   forum_topic_id: number | null;
 }
 
+export interface Feedback {
+  ID: number;
+  tenant_id: number;
+  group_id: number;
+  message: string;
+  admin_only: boolean;
+  posted: boolean;
+  CreatedAt: string;
+}
+
 export interface User {
   id: number;
   access_token: string;

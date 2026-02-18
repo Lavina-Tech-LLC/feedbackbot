@@ -37,10 +37,23 @@
     "forumTopicId": "Forum mavzu ID",
     "forumTopicIdHint": "Oddiy guruhlar uchun bo'sh qoldiring"
   },
+  "feedbacks": {
+    "title": "Fikrlar",
+    "selectGroup": "Guruhni tanlang",
+    "selectGroupPlaceholder": "Fikrlarni ko'rish uchun guruhni tanlang",
+    "all": "Barchasi",
+    "public": "Ommaviy",
+    "adminOnly": "Faqat admin uchun",
+    "adminOnlyBadge": "Faqat admin",
+    "publicBadge": "Ommaviy",
+    "posted": "Joylangan",
+    "empty": "Hali fikrlar yo'q."
+  },
   "nav": {
     "setup": "Sozlash",
     "settings": "Sozlamalar",
     "bots": "Botlar",
-    "groups": "Guruhlar"
+    "groups": "Guruhlar",
+    "feedbacks": "Fikrlar"
   }
 }
