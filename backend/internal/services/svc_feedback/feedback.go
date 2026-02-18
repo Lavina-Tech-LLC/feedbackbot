@@ -16,6 +16,8 @@ func GetFeedbacks(c *gin.Context) {
 	}
 
 	adminOnly := c.Query("admin_only")
+	dateFrom := c.Query("date_from")
+	dateTo := c.Query("date_to")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
 
@@ -33,6 +35,13 @@ func GetFeedbacks(c *gin.Context) {
 		query = query.Where("admin_only = ?", true)
 	} else if adminOnly == "false" {
 		query = query.Where("admin_only = ?", false)
+	}
+
+	if dateFrom != "" {
+		query = query.Where("created_at >= ?", dateFrom)
+	}
+	if dateTo != "" {
+		query = query.Where("created_at <= ?", dateTo)
 	}
 
 	var total int64
