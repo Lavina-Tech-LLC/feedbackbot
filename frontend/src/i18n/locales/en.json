@@ -37,10 +37,23 @@
     "forumTopicId": "Forum Topic ID",
     "forumTopicIdHint": "Leave empty for non-forum groups"
   },
+  "feedbacks": {
+    "title": "Feedbacks",
+    "selectGroup": "Select Group",
+    "selectGroupPlaceholder": "Choose a group to view feedbacks",
+    "all": "All",
+    "public": "Public",
+    "adminOnly": "Admin Only",
+    "adminOnlyBadge": "Admin Only",
+    "publicBadge": "Public",
+    "posted": "Posted",
+    "empty": "No feedbacks yet."
+  },
   "nav": {
     "setup": "Setup",
     "settings": "Settings",
     "bots": "Bots",
-    "groups": "Groups"
+    "groups": "Groups",
+    "feedbacks": "Feedbacks"
   }
 }
