@@ -47,7 +47,9 @@
     "adminOnlyBadge": "Admin Only",
     "publicBadge": "Public",
     "posted": "Posted",
-    "empty": "No feedbacks yet."
+    "empty": "No feedbacks yet.",
+    "dateRange": "Date Range",
+    "dateRangePlaceholder": "Select date range"
   },
   "nav": {
     "setup": "Setup",

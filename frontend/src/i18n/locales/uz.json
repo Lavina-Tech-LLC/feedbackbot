@@ -47,7 +47,9 @@
     "adminOnlyBadge": "Faqat admin",
     "publicBadge": "Ommaviy",
     "posted": "Joylangan",
-    "empty": "Hali fikrlar yo'q."
+    "empty": "Hali fikrlar yo'q.",
+    "dateRange": "Sana oralig'i",
+    "dateRangePlaceholder": "Sana oralig'ini tanlang"
   },
   "nav": {
     "setup": "Sozlash",
