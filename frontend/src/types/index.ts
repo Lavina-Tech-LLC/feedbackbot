@@ -16,6 +16,25 @@ export interface Bot {
   UpdatedAt: string;
 }
 
+export interface Group {
+  ID: number;
+  tenant_id: number;
+  bot_id: number;
+  chat_id: number;
+  title: string;
+  type: string;
+  is_active: boolean;
+  CreatedAt: string;
+  UpdatedAt: string;
+}
+
+export interface FeedbackConfig {
+  ID: number;
+  group_id: number;
+  post_to_group: boolean;
+  forum_topic_id: number | null;
+}
+
 export interface User {
   id: number;
   access_token: string;

@@ -6,6 +6,8 @@ func Migrate() {
 	err := models.DB.AutoMigrate(
 		&models.Tenant{},
 		&models.Bot{},
+		&models.Group{},
+		&models.FeedbackConfig{},
 	)
 	if err != nil {
 		panic(err)
