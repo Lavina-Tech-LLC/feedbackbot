@@ -8,6 +8,8 @@ func Migrate() {
 		&models.Bot{},
 		&models.Group{},
 		&models.FeedbackConfig{},
+		&models.GroupUser{},
+		&models.Feedback{},
 	)
 	if err != nil {
 		panic(err)
