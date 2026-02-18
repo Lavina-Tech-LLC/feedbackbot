@@ -3,7 +3,9 @@ package svc_feedback
 import (
 	"strconv"
 
+	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
+	"github.com/Lavina-Tech-LLC/feedbackbot/internal/services"
 	lvn "github.com/Lavina-Tech-LLC/lavinagopackage/v2"
 	"github.com/gin-gonic/gin"
 )
@@ -29,7 +31,8 @@ func GetFeedbacks(c *gin.Context) {
 	}
 	offset := (page - 1) * limit
 
-	query := models.DB.Where("group_id = ?", groupID)
+	tenantID := services.GetTenantID(c)
+	query := models.DB.Scopes(db.TenantScope(tenantID)).Where("group_id = ?", groupID)
 
 	if adminOnly == "true" {
 		query = query.Where("admin_only = ?", true)
