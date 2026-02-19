@@ -19,9 +19,10 @@ func GetGroups(c *gin.Context) {
 
 func GetGroup(c *gin.Context) {
 	id := c.Param("id")
+	tenantID := services.GetTenantID(c)
 
 	var group models.Group
-	if err := models.DB.First(&group, id).Error; err != nil {
+	if err := models.DB.Scopes(db.TenantScope(tenantID)).First(&group, id).Error; err != nil {
 		c.Data(lvn.Res(404, "", "Group not found"))
 		return
 	}
@@ -35,9 +36,10 @@ type updateGroupReq struct {
 
 func UpdateGroup(c *gin.Context) {
 	id := c.Param("id")
+	tenantID := services.GetTenantID(c)
 
 	var group models.Group
-	if err := models.DB.First(&group, id).Error; err != nil {
+	if err := models.DB.Scopes(db.TenantScope(tenantID)).First(&group, id).Error; err != nil {
 		c.Data(lvn.Res(404, "", "Group not found"))
 		return
 	}
@@ -67,6 +69,14 @@ type updateConfigReq struct {
 
 func UpdateGroupConfig(c *gin.Context) {
 	id := c.Param("id")
+	tenantID := services.GetTenantID(c)
+
+	// Verify the group belongs to this tenant before accessing its config
+	var group models.Group
+	if err := models.DB.Scopes(db.TenantScope(tenantID)).First(&group, id).Error; err != nil {
+		c.Data(lvn.Res(404, "", "Group not found"))
+		return
+	}
 
 	var config models.FeedbackConfig
 	if err := models.DB.Where("group_id = ?", id).First(&config).Error; err != nil {

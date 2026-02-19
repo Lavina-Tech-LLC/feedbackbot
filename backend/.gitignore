@@ -1,6 +1,8 @@
 conf/*.yaml
 conf/*.yml
+conf/*.json
 !conf/config.example.yaml
+.env
 *.exe
 *.exe~
 *.dll

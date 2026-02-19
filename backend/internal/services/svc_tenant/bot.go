@@ -6,14 +6,15 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
+	"github.com/Lavina-Tech-LLC/feedbackbot/internal/services"
 	lvn "github.com/Lavina-Tech-LLC/lavinagopackage/v2"
 	"github.com/gin-gonic/gin"
 )
 
 type createBotReq struct {
-	TenantID uint   `json:"tenant_id" binding:"required"`
-	Token    string `json:"token" binding:"required"`
+	Token string `json:"token" binding:"required"`
 }
 
 type telegramGetMeResponse struct {
@@ -55,9 +56,11 @@ func CreateBot(c *gin.Context) {
 		return
 	}
 
+	tenantID := services.GetTenantID(c)
+
 	// Verify tenant exists
 	var tenant models.Tenant
-	if err := models.DB.First(&tenant, req.TenantID).Error; err != nil {
+	if err := models.DB.First(&tenant, tenantID).Error; err != nil {
 		c.Data(lvn.Res(404, "", "Tenant not found"))
 		return
 	}
@@ -75,7 +78,7 @@ func CreateBot(c *gin.Context) {
 	}
 
 	bot := models.Bot{
-		TenantID:    req.TenantID,
+		TenantID:    tenantID,
 		Token:       req.Token,
 		BotUsername: tgResp.Result.Username,
 		BotName:     tgResp.Result.FirstName,
@@ -92,9 +95,10 @@ func CreateBot(c *gin.Context) {
 
 func GetBot(c *gin.Context) {
 	id := c.Param("id")
+	tenantID := services.GetTenantID(c)
 
 	var bot models.Bot
-	if err := models.DB.First(&bot, id).Error; err != nil {
+	if err := models.DB.Scopes(db.TenantScope(tenantID)).First(&bot, id).Error; err != nil {
 		c.Data(lvn.Res(404, "", "Bot not found"))
 		return
 	}
@@ -104,9 +108,10 @@ func GetBot(c *gin.Context) {
 
 func DeleteBot(c *gin.Context) {
 	id := c.Param("id")
+	tenantID := services.GetTenantID(c)
 
 	var bot models.Bot
-	if err := models.DB.First(&bot, id).Error; err != nil {
+	if err := models.DB.Scopes(db.TenantScope(tenantID)).First(&bot, id).Error; err != nil {
 		c.Data(lvn.Res(404, "", "Bot not found"))
 		return
 	}
