@@ -51,6 +51,12 @@
     "dateRange": "Диапазон дат",
     "dateRangePlaceholder": "Выберите диапазон дат"
   },
+  "auth": {
+    "signIn": "Войти в FeedbackBot",
+    "loginWithLavina": "Войти через Lavina",
+    "loginError": "Ошибка входа. Попробуйте снова.",
+    "redirecting": "Перенаправление..."
+  },
   "nav": {
     "setup": "Настройка",
     "settings": "Настройки",

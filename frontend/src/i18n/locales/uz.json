@@ -51,6 +51,12 @@
     "dateRange": "Sana oralig'i",
     "dateRangePlaceholder": "Sana oralig'ini tanlang"
   },
+  "auth": {
+    "signIn": "FeedbackBot ga kirish",
+    "loginWithLavina": "Lavina orqali kirish",
+    "loginError": "Kirishda xatolik. Qayta urinib ko'ring.",
+    "redirecting": "Yo'naltirilmoqda..."
+  },
   "nav": {
     "setup": "Sozlash",
     "settings": "Sozlamalar",

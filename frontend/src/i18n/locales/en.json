@@ -51,6 +51,12 @@
     "dateRange": "Date Range",
     "dateRangePlaceholder": "Select date range"
   },
+  "auth": {
+    "signIn": "Sign in to FeedbackBot",
+    "loginWithLavina": "Login with Lavina",
+    "loginError": "Login failed. Please try again.",
+    "redirecting": "Redirecting..."
+  },
   "nav": {
     "setup": "Setup",
     "settings": "Settings",
