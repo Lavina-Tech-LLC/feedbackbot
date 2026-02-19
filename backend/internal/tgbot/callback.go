@@ -29,18 +29,19 @@ func handleCallbackQuery(bot models.Bot, cq *CallbackQuery) {
 	// Get pending feedback
 	pending, ok := getPendingFeedback(cq.From.ID)
 	if !ok {
-		sendMessage(bot.Token, cq.Message.Chat.ID, "⏳ Session expired. Please send your feedback again.")
+		lang := detectLang(cq.From.LanguageCode)
+		sendMessage(bot.Token, cq.Message.Chat.ID, getMsg("sessionExpired", lang))
 		return
 	}
 
 	// Find group
 	var group models.Group
 	if err := models.DB.First(&group, groupID).Error; err != nil {
-		sendMessage(bot.Token, cq.Message.Chat.ID, "❌ Group not found.")
+		sendMessage(bot.Token, cq.Message.Chat.ID, getMsg("groupNotFound", pending.Lang))
 		return
 	}
 
-	submitFeedback(bot, cq.Message.Chat.ID, cq.From.ID, group, pending.Text, pending.AdminOnly)
+	submitFeedback(bot, cq.Message.Chat.ID, cq.From.ID, group, pending.Text, pending.AdminOnly, pending.Lang)
 }
 
 func answerCallback(token string, callbackID string) {

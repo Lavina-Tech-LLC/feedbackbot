@@ -1,1 +1,3 @@
 .github/
+.env
+backend/conf/config.json

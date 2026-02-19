@@ -39,10 +39,11 @@ type Chat struct {
 }
 
 type User struct {
-	ID        int64  `json:"id"`
-	IsBot     bool   `json:"is_bot"`
-	FirstName string `json:"first_name"`
-	Username  string `json:"username"`
+	ID           int64  `json:"id"`
+	IsBot        bool   `json:"is_bot"`
+	FirstName    string `json:"first_name"`
+	Username     string `json:"username"`
+	LanguageCode string `json:"language_code"`
 }
 
 type ChatMember struct {
@@ -109,6 +110,12 @@ func getUpdates(token string, offset int64) ([]Update, error) {
 }
 
 func handleUpdate(bot models.Bot, update Update) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("[tgbot] PANIC in handleUpdate: %v", r)
+		}
+	}()
+
 	if update.MyChatMember != nil {
 		handleMyChatMember(bot, update.MyChatMember)
 	}
