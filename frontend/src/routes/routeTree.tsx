@@ -1,6 +1,7 @@
-import { createRootRoute, createRoute, Outlet } from '@tanstack/react-router';
+import { createRootRoute, createRoute, Outlet, redirect } from '@tanstack/react-router';
 import { Navbar } from '@/components/shared';
 import { SetupPage, BotConfigPage, GroupsPage, FeedbacksPage, LoginPage, CallbackPage } from '@/components/pageComponents';
+import { store } from '@/redux/store';
 
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
@@ -15,6 +16,12 @@ const authLayout = createRoute({
 const appLayout = createRoute({
   getParentRoute: () => rootRoute,
   id: 'app-layout',
+  beforeLoad: () => {
+    const token = store.getState().auth.token;
+    if (!token) {
+      throw redirect({ to: '/login' });
+    }
+  },
   component: () => (
     <>
       <Navbar />

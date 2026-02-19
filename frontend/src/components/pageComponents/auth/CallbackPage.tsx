@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 import { useExchangeToken } from '@/service';
 import { useAppDispatch } from '@/redux/store';
-import { setUser } from '@/redux/slices';
+import { setUser, setToken } from '@/redux/slices';
 
 export function CallbackPage() {
   const { t } = useTranslation();
@@ -31,6 +31,7 @@ export function CallbackPage() {
       { code, redirect_uri: window.location.origin + '/auth/callback' },
       {
         onSuccess: (res) => {
+          dispatch(setToken(res.data.access_token));
           dispatch(setUser(res.data));
           navigate({ to: '/' });
         },

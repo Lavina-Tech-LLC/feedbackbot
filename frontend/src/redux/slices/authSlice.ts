@@ -4,6 +4,7 @@ import type { AuthState } from '@/redux/types';
 
 const initialState: AuthState = {
   user: undefined,
+  token: undefined,
 };
 
 export const authSlice = createSlice({
@@ -16,8 +17,18 @@ export const authSlice = createSlice({
     clearUser: (state) => {
       state.user = undefined;
     },
+    setToken: (state, action: PayloadAction<string>) => {
+      state.token = action.payload;
+    },
+    clearToken: (state) => {
+      state.token = undefined;
+    },
+    clearAuth: (state) => {
+      state.user = undefined;
+      state.token = undefined;
+    },
   },
 });
 
-export const { setUser, clearUser } = authSlice.actions;
+export const { setUser, clearUser, setToken, clearToken, clearAuth } = authSlice.actions;
 export default authSlice.reducer;

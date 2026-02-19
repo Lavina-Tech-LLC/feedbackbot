@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { api_constants } from './constants';
 import { store } from '@/redux/store';
-import { clearUser } from '@/redux/slices';
-import Cookies from 'js-cookie';
+import { clearAuth } from '@/redux/slices';
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
@@ -24,10 +23,9 @@ api.interceptors.request.use((config) => {
   if (config.noAuth === true) {
     delete config.headers.Authorization;
   } else {
-    const session = Cookies.get('session');
-    if (session) {
-      const user = JSON.parse(session);
-      config.headers.Authorization = user?.access_token;
+    const token = store.getState().auth.token;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
   }
   return config;
@@ -37,7 +35,8 @@ api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
-      store.dispatch(clearUser());
+      store.dispatch(clearAuth());
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   },

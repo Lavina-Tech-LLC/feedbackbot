@@ -55,7 +55,8 @@
     "signIn": "FeedbackBot ga kirish",
     "loginWithLavina": "Lavina orqali kirish",
     "loginError": "Kirishda xatolik. Qayta urinib ko'ring.",
-    "redirecting": "Yo'naltirilmoqda..."
+    "redirecting": "Yo'naltirilmoqda...",
+    "logout": "Chiqish"
   },
   "nav": {
     "setup": "Sozlash",
