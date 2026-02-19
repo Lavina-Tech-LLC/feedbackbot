@@ -7,3 +7,6 @@ db:
 
 settings:
   srvaddress: ":8080"
+
+jwt:
+  accesssecret: "your-jwt-secret-here"
