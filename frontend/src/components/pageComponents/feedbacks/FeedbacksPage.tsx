@@ -17,6 +17,7 @@ import { DatePickerInput } from '@mantine/dates';
 import { IconLock, IconWorld, IconCalendar } from '@tabler/icons-react';
 import { useGetFeedbacks } from '@/service/feedback';
 import { useGetGroups } from '@/service/group';
+import { useCurrentTenant } from '@/utils/useCurrentTenant';
 import type { Feedback } from '@/types';
 import '@mantine/dates/styles.css';
 
@@ -27,7 +28,8 @@ export function FeedbacksPage() {
   const [page, setPage] = useState(1);
   const [dateRange, setDateRange] = useState<[Date | string | null, Date | string | null]>([null, null]);
 
-  const { data: groupsData } = useGetGroups('1'); // TODO: from auth context
+  const tenantId = useCurrentTenant();
+  const { data: groupsData } = useGetGroups(tenantId);
   const groups = (groupsData as { data: { ID: number; title: string }[] } | undefined)?.data ?? [];
 
   const { data: feedbackData, isLoading } = useGetFeedbacks({

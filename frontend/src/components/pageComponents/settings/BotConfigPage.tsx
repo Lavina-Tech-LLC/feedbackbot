@@ -15,11 +15,13 @@ import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { IconTrash, IconRobot } from '@tabler/icons-react';
 import { useCreateBot } from '@/service';
+import { useCurrentTenant } from '@/utils/useCurrentTenant';
 import type { Bot } from '@/types';
 import { useState } from 'react';
 
 export function BotConfigPage() {
   const { t } = useTranslation();
+  const tenantId = useCurrentTenant();
   const createBot = useCreateBot();
   const [bots, setBots] = useState<Bot[]>([]);
 
@@ -33,9 +35,8 @@ export function BotConfigPage() {
   });
 
   const handleSubmit = form.onSubmit((values) => {
-    // TODO: get tenant_id from context/auth once auth is integrated
     createBot.mutate(
-      { tenant_id: 1, token: values.token },
+      { tenant_id: Number(tenantId), token: values.token },
       {
         onSuccess: (res) => {
           const bot = (res as { data: Bot }).data;

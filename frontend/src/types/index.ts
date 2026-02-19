@@ -47,6 +47,7 @@ export interface Feedback {
 
 export interface User {
   id: number;
+  tenant_id: number;
   access_token: string;
   name: string;
 }

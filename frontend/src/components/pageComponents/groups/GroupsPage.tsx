@@ -18,11 +18,13 @@ import {
 } from '@mantine/core';
 import { IconSettings } from '@tabler/icons-react';
 import { useGetGroups, useUpdateGroup, useUpdateGroupConfig } from '@/service/group';
+import { useCurrentTenant } from '@/utils/useCurrentTenant';
 import type { Group } from '@/types';
 
 export function GroupsPage() {
   const { t } = useTranslation();
-  const { data, isLoading } = useGetGroups('1'); // TODO: get tenant_id from auth context
+  const tenantId = useCurrentTenant();
+  const { data, isLoading } = useGetGroups(tenantId);
   const updateGroup = useUpdateGroup();
   const updateConfig = useUpdateGroupConfig();
 
