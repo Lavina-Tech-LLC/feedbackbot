@@ -7,6 +7,7 @@ import (
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/services/svc_feedback"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/services/svc_group"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/services/svc_tenant"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,6 +37,13 @@ func setRoutes(router *gin.Engine) {
 
 func Listen() {
 	router := gin.Default()
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{"Authorization", "Content-Type", "X-Tenant-ID"},
+	}))
+
 	setRoutes(router)
 
 	addr := config.Confs.Settings.SrvAddress

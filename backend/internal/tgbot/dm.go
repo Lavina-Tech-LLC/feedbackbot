@@ -21,11 +21,11 @@ func handlePrivateMessage(bot models.Bot, msg *Message) {
 		return
 	}
 
-	// Check if admin_only
+	// Check if admin_only (case-insensitive prefix)
 	adminOnly := false
-	if strings.HasPrefix(text, "/adminOnly") {
+	if len(text) >= len("/adminOnly") && strings.EqualFold(text[:len("/adminOnly")], "/adminOnly") {
 		adminOnly = true
-		text = strings.TrimSpace(strings.TrimPrefix(text, "/adminOnly"))
+		text = strings.TrimSpace(text[len("/adminOnly"):])
 		if text == "" {
 			sendMessage(bot.Token, msg.Chat.ID, "Please write your feedback after /adminOnly.\n\nExample: /adminOnly I think we should improve our standup meetings.")
 			return

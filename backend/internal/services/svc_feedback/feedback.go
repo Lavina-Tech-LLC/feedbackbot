@@ -8,15 +8,15 @@ import (
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/services"
 	lvn "github.com/Lavina-Tech-LLC/lavinagopackage/v2"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-func GetFeedbacks(c *gin.Context) {
-	groupID := c.Query("group_id")
-	if groupID == "" {
-		c.Data(lvn.Res(400, "", "group_id is required"))
-		return
-	}
+type FeedbackResponse struct {
+	models.Feedback
+	GroupName string `json:"group_name"`
+}
 
+func GetFeedbacks(c *gin.Context) {
 	adminOnly := c.Query("admin_only")
 	dateFrom := c.Query("date_from")
 	dateTo := c.Query("date_to")
@@ -32,7 +32,11 @@ func GetFeedbacks(c *gin.Context) {
 	offset := (page - 1) * limit
 
 	tenantID := services.GetTenantID(c)
-	query := models.DB.Scopes(db.TenantScope(tenantID)).Where("group_id = ?", groupID)
+	query := models.DB.Scopes(db.TenantScope(tenantID))
+
+	if groupID := c.Query("group_id"); groupID != "" {
+		query = query.Where("group_id = ?", groupID)
+	}
 
 	if adminOnly == "true" {
 		query = query.Where("admin_only = ?", true)
@@ -51,10 +55,17 @@ func GetFeedbacks(c *gin.Context) {
 	query.Model(&models.Feedback{}).Count(&total)
 
 	var feedbacks []models.Feedback
-	query.Order("created_at DESC").Offset(offset).Limit(limit).Find(&feedbacks)
+	query.Preload("Group", func(db *gorm.DB) *gorm.DB {
+		return db.Select("id", "title")
+	}).Order("created_at DESC").Offset(offset).Limit(limit).Find(&feedbacks)
+
+	resp := make([]FeedbackResponse, len(feedbacks))
+	for i, fb := range feedbacks {
+		resp[i] = FeedbackResponse{Feedback: fb, GroupName: fb.Group.Title}
+	}
 
 	c.Data(lvn.Res(200, gin.H{
-		"data":  feedbacks,
+		"data":  resp,
 		"total": total,
 		"page":  page,
 		"limit": limit,
