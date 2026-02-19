@@ -10,6 +10,11 @@ type (
 	Conf struct {
 		DB       gormDB
 		Settings Settings
+		JWT      JWT
+	}
+
+	JWT struct {
+		AccessSecret string
 	}
 
 	gormDB struct {
