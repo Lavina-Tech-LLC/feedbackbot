@@ -13,11 +13,26 @@ import (
 )
 
 func handlePrivateMessage(bot models.Bot, msg *Message) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("[tgbot] PANIC in handlePrivateMessage: %v", r)
+			sendMessage(bot.Token, msg.Chat.ID, "❌ An unexpected error occurred. Please try again.")
+		}
+	}()
+
 	userID := msg.From.ID
 	text := strings.TrimSpace(msg.Text)
+	lang := detectLang(msg.From.LanguageCode)
 
-	if text == "/start" {
-		sendMessage(bot.Token, msg.Chat.ID, "👋 Welcome to FeedbackBot!\n\nSend me a message and I'll deliver it anonymously to your team admin.\n\nUse /adminOnly before your message to keep it visible only to the admin.")
+	// Commands
+	if text == "/start" || text == "/help" {
+		sendMessage(bot.Token, msg.Chat.ID, getMsg("welcome", lang))
+		return
+	}
+
+	// Unknown commands (starts with / but not known)
+	if strings.HasPrefix(text, "/") && !strings.HasPrefix(text, "/adminOnly") {
+		sendMessage(bot.Token, msg.Chat.ID, getMsg("unknownCommand", lang))
 		return
 	}
 
@@ -27,13 +42,19 @@ func handlePrivateMessage(bot models.Bot, msg *Message) {
 		adminOnly = true
 		text = strings.TrimSpace(strings.TrimPrefix(text, "/adminOnly"))
 		if text == "" {
-			sendMessage(bot.Token, msg.Chat.ID, "Please write your feedback after /adminOnly.\n\nExample: /adminOnly I think we should improve our standup meetings.")
+			sendMessage(bot.Token, msg.Chat.ID, getMsg("adminOnlyEmpty", lang))
 			return
 		}
 	}
 
 	if text == "" {
-		sendMessage(bot.Token, msg.Chat.ID, "Please send a text message with your feedback.")
+		sendMessage(bot.Token, msg.Chat.ID, getMsg("emptyMessage", lang))
+		return
+	}
+
+	// Rate limiting
+	if !checkRateLimit(userID) {
+		sendMessage(bot.Token, msg.Chat.ID, getMsg("rateLimited", lang))
 		return
 	}
 
@@ -42,20 +63,17 @@ func handlePrivateMessage(bot models.Bot, msg *Message) {
 	models.DB.Where("bot_id = ? AND is_active = ?", bot.ID, true).Find(&groups)
 
 	if len(groups) == 0 {
-		sendMessage(bot.Token, msg.Chat.ID, "❌ No active groups found. The bot needs to be added to a group first.")
+		sendMessage(bot.Token, msg.Chat.ID, getMsg("noGroups", lang))
 		return
 	}
 
 	if len(groups) == 1 {
-		// Auto-assign to the only group
-		submitFeedback(bot, msg.Chat.ID, userID, groups[0], text, adminOnly)
+		submitFeedback(bot, msg.Chat.ID, userID, groups[0], text, adminOnly, lang)
 		return
 	}
 
 	// Multiple groups — store pending feedback and show keyboard
-	// For now, use the first group (TODO: implement inline keyboard picker in future iteration)
-	// Store in a simple way: use callback data pattern
-	storePendingFeedback(userID, text, adminOnly)
+	storePendingFeedback(userID, text, adminOnly, lang)
 
 	var keyboard [][]inlineButton
 	for _, g := range groups {
@@ -64,10 +82,10 @@ func handlePrivateMessage(bot models.Bot, msg *Message) {
 		})
 	}
 
-	sendMessageWithKeyboard(bot.Token, msg.Chat.ID, "📋 Which group is this feedback for?", keyboard)
+	sendMessageWithKeyboard(bot.Token, msg.Chat.ID, getMsg("pickGroup", lang), keyboard)
 }
 
-func submitFeedback(bot models.Bot, chatID int64, telegramUserID int64, group models.Group, message string, adminOnly bool) {
+func submitFeedback(bot models.Bot, chatID int64, telegramUserID int64, group models.Group, message string, adminOnly bool, lang string) {
 	// Find or create GroupUser
 	var groupUser models.GroupUser
 	result := models.DB.Where("group_id = ? AND telegram_user_id = ?", group.ID, telegramUserID).First(&groupUser)
@@ -109,9 +127,9 @@ func submitFeedback(bot models.Bot, chatID int64, telegramUserID int64, group mo
 
 	// Confirm to user
 	if adminOnly {
-		sendMessage(bot.Token, chatID, "✅ Your feedback has been sent privately to the admin. It will NOT be posted in the group.")
+		sendMessage(bot.Token, chatID, getMsg("feedbackSentAdminOnly", lang))
 	} else {
-		sendMessage(bot.Token, chatID, "✅ Your feedback has been submitted anonymously. Thank you!")
+		sendMessage(bot.Token, chatID, getMsg("feedbackSent", lang))
 	}
 }
 
@@ -121,10 +139,11 @@ var pendingFeedback = make(map[int64]pendingFB)
 type pendingFB struct {
 	Text      string
 	AdminOnly bool
+	Lang      string
 }
 
-func storePendingFeedback(userID int64, text string, adminOnly bool) {
-	pendingFeedback[userID] = pendingFB{Text: text, AdminOnly: adminOnly}
+func storePendingFeedback(userID int64, text string, adminOnly bool, lang string) {
+	pendingFeedback[userID] = pendingFB{Text: text, AdminOnly: adminOnly, Lang: lang}
 }
 
 func getPendingFeedback(userID int64) (pendingFB, bool) {
@@ -143,8 +162,9 @@ type inlineButton struct {
 func sendMessage(token string, chatID int64, text string) {
 	apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", token)
 	resp, err := http.PostForm(apiURL, url.Values{
-		"chat_id": {fmt.Sprintf("%d", chatID)},
-		"text":    {text},
+		"chat_id":    {fmt.Sprintf("%d", chatID)},
+		"text":       {text},
+		"parse_mode": {"Markdown"},
 	})
 	if err != nil {
 		log.Printf("[tgbot] Error sending message: %v", err)
