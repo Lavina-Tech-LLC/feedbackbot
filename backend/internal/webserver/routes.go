@@ -16,6 +16,10 @@ func setRoutes(router *gin.Engine) {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
+	authGroup := router.Group("/auth")
+	authGroup.GET("/config", auth.GetConfig)
+	authGroup.GET("/me", auth.Auth, auth.GetMe)
+
 	tenants := router.Group("/tenants")
 	tenants.POST("", svc_tenant.CreateTenant)
 	tenants.GET("/:id", svc_tenant.GetTenant)

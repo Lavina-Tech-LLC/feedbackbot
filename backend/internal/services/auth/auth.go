@@ -44,6 +44,12 @@ func Auth(c *gin.Context) {
 	if role, ok := claims["role"]; ok {
 		c.Set("role", role)
 	}
+	if tenantID, ok := claims["tenant_id"]; ok {
+		c.Set("tenant_id", tenantID)
+	}
+	if name, ok := claims["name"]; ok {
+		c.Set("name", name)
+	}
 
 	c.Next()
 }

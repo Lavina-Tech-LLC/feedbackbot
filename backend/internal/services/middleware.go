@@ -7,10 +7,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TenantMiddleware extracts tenant_id from request header or query param
-// and sets it in the Gin context. In the future, this will extract from auth token.
+// TenantMiddleware extracts tenant_id from JWT claims (set by Auth middleware),
+// falling back to X-Tenant-ID header or query param for backward compatibility.
 func TenantMiddleware(c *gin.Context) {
-	// Try header first (X-Tenant-ID), then query param
+	// Try JWT context first (set by Auth middleware)
+	if tid, exists := c.Get("tenant_id"); exists {
+		switch v := tid.(type) {
+		case float64:
+			c.Set("tenant_id", uint(v))
+			c.Next()
+			return
+		case uint:
+			c.Next()
+			return
+		}
+	}
+
+	// Fall back to header / query param
 	tenantIDStr := c.GetHeader("X-Tenant-ID")
 	if tenantIDStr == "" {
 		tenantIDStr = c.Query("tenant_id")

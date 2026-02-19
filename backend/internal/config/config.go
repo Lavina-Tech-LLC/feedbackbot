@@ -8,9 +8,10 @@ var Confs Conf
 
 type (
 	Conf struct {
-		DB       gormDB
-		Settings Settings
-		JWT      jwtConfig
+		DB           gormDB
+		Settings     Settings
+		JWT          jwtConfig
+		AuthProvider AuthProvider
 	}
 
 	jwtConfig struct {
@@ -27,6 +28,13 @@ type (
 
 	Settings struct {
 		SrvAddress string
+	}
+
+	AuthProvider struct {
+		BaseURL      string
+		ClientID     string
+		ClientSecret string
+		RedirectURI  string
 	}
 )
 
