@@ -1,6 +1,6 @@
 const HOSTNAME_MAP: Record<string, string> = {
-  'feedbackbot.lavina.tech': 'https://api-feedbackbot.lavina.tech',
-  'stage-feedbackbot.lavina.tech': 'https://api-stage-feedbackbot.lavina.tech',
+  'feedbackbot.lavina.tech': 'https://feedbackbot-api.lavina.tech',
+  'stage-feedbackbot.lavina.tech': 'https://stage-feedbackbot-api.lavina.tech',
   localhost: '/api',
 };
 

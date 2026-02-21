@@ -6,13 +6,10 @@ services:
     container_name: feedbackbot-api
     restart: unless-stopped
     environment:
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT:-5432}
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
       - BOT_TOKEN=${BOT_TOKEN}
       - APP_ENV=${APP_ENV:-staging}
+    volumes:
+      - ./backend/conf:/root/conf
     ports:
       - "8091:8080"
     networks:
