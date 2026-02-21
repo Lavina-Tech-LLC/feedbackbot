@@ -109,18 +109,38 @@ func parseAuthResponse(body []byte) (gin.H, error) {
 		return nil, err
 	}
 
-	// The auth provider may nest tokens under "data" or return them at the top level.
-	data, ok := raw["data"].(map[string]interface{})
-	if !ok {
-		data = raw
+	// The auth provider nests tokens under "tokens", but fall back to "data" or top level.
+	var tokens map[string]interface{}
+	if t, ok := raw["tokens"].(map[string]interface{}); ok {
+		tokens = t
+	} else if d, ok := raw["data"].(map[string]interface{}); ok {
+		tokens = d
+	} else {
+		tokens = raw
 	}
 
-	accessToken, _ := data["access_token"].(string)
-	refreshToken, _ := data["refresh_token"].(string)
+	accessToken, _ := tokens["access_token"].(string)
+	refreshToken, _ := tokens["refresh_token"].(string)
 
 	result := gin.H{
 		"access_token":  accessToken,
 		"refresh_token": refreshToken,
+	}
+
+	// Extract user info from the "user" object if present.
+	if user, ok := raw["user"].(map[string]interface{}); ok {
+		if v, ok := user["id"]; ok {
+			result["user_id"] = v
+		}
+		if v, ok := user["email"].(string); ok {
+			result["email"] = v
+		}
+		if v, ok := user["name"].(string); ok {
+			result["name"] = v
+		}
+		if v, ok := user["role"].(string); ok {
+			result["role"] = v
+		}
 	}
 
 	// Extract claims from the access token (without verification — the auth provider already signed it).
@@ -128,17 +148,23 @@ func parseAuthResponse(body []byte) (gin.H, error) {
 		claims := jwt.MapClaims{}
 		parser := jwt.NewParser(jwt.WithoutClaimsValidation())
 		if t, _, err := parser.ParseUnverified(accessToken, claims); err == nil && t != nil {
-			if v, ok := claims["user_id"]; ok {
-				result["user_id"] = v
+			if _, hasID := result["user_id"]; !hasID {
+				if v, ok := claims["user_id"]; ok {
+					result["user_id"] = v
+				}
 			}
-			if v, ok := claims["email"]; ok {
-				result["email"] = v
+			if _, hasEmail := result["email"]; !hasEmail {
+				if v, ok := claims["email"]; ok {
+					result["email"] = v
+				}
 			}
 			if v, ok := claims["tenant_id"]; ok {
 				result["tenant_id"] = v
 			}
-			if v, ok := claims["name"]; ok {
-				result["name"] = v
+			if _, hasName := result["name"]; !hasName {
+				if v, ok := claims["name"]; ok {
+					result["name"] = v
+				}
 			}
 		}
 	}
