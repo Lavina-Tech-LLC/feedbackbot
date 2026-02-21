@@ -53,10 +53,26 @@
   },
   "auth": {
     "signIn": "FeedbackBot ga kirish",
+    "signUp": "Hisob yaratish",
     "loginWithLavina": "Lavina orqali kirish",
     "loginError": "Kirishda xatolik. Qayta urinib ko'ring.",
+    "registerError": "Ro'yxatdan o'tishda xatolik. Qayta urinib ko'ring.",
     "redirecting": "Yo'naltirilmoqda...",
-    "logout": "Chiqish"
+    "logout": "Chiqish",
+    "name": "Ism",
+    "namePlaceholder": "Ismingiz",
+    "nameMinLength": "Ism kamida 2 ta belgidan iborat bo'lishi kerak",
+    "email": "Elektron pochta",
+    "emailPlaceholder": "your@email.com",
+    "invalidEmail": "Noto'g'ri elektron pochta manzili",
+    "password": "Parol",
+    "passwordPlaceholder": "Parolingiz",
+    "passwordMinLength": "Parol kamida 8 ta belgidan iborat bo'lishi kerak",
+    "confirmPassword": "Parolni tasdiqlang",
+    "confirmPasswordPlaceholder": "Parolni takrorlang",
+    "passwordsMismatch": "Parollar mos kelmaydi",
+    "register": "Ro'yxatdan o'tish",
+    "alreadyHaveAccount": "Hisobingiz bormi? Kirish"
   },
   "nav": {
     "setup": "Sozlash",

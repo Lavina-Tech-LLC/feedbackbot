@@ -14,3 +14,9 @@ export const useExchangeToken = () =>
     mutationFn: (data: { code: string; redirect_uri: string }) =>
       api.post<never, { data: User }>('/auth/token', data, { noAuth: true }),
   });
+
+export const useRegister = () =>
+  useMutation({
+    mutationFn: (data: { name: string; email: string; password: string }) =>
+      api.post<never, { data: User & { access_token: string } }>('/auth/register', data, { noAuth: true }),
+  });

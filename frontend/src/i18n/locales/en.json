@@ -53,10 +53,26 @@
   },
   "auth": {
     "signIn": "Sign in to FeedbackBot",
+    "signUp": "Create an account",
     "loginWithLavina": "Login with Lavina",
     "loginError": "Login failed. Please try again.",
+    "registerError": "Registration failed. Please try again.",
     "redirecting": "Redirecting...",
-    "logout": "Logout"
+    "logout": "Logout",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "nameMinLength": "Name must be at least 2 characters",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "invalidEmail": "Invalid email address",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Repeat your password",
+    "passwordsMismatch": "Passwords do not match",
+    "register": "Sign Up",
+    "alreadyHaveAccount": "Already have an account? Sign in"
   },
   "nav": {
     "setup": "Setup",

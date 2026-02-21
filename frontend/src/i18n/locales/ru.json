@@ -53,10 +53,26 @@
   },
   "auth": {
     "signIn": "Войти в FeedbackBot",
+    "signUp": "Создать аккаунт",
     "loginWithLavina": "Войти через Lavina",
     "loginError": "Ошибка входа. Попробуйте снова.",
+    "registerError": "Ошибка регистрации. Попробуйте снова.",
     "redirecting": "Перенаправление...",
-    "logout": "Выйти"
+    "logout": "Выйти",
+    "name": "Имя",
+    "namePlaceholder": "Ваше имя",
+    "nameMinLength": "Имя должно содержать минимум 2 символа",
+    "email": "Электронная почта",
+    "emailPlaceholder": "your@email.com",
+    "invalidEmail": "Неверный адрес электронной почты",
+    "password": "Пароль",
+    "passwordPlaceholder": "Ваш пароль",
+    "passwordMinLength": "Пароль должен содержать минимум 8 символов",
+    "confirmPassword": "Подтвердите пароль",
+    "confirmPasswordPlaceholder": "Повторите пароль",
+    "passwordsMismatch": "Пароли не совпадают",
+    "register": "Зарегистрироваться",
+    "alreadyHaveAccount": "Уже есть аккаунт? Войти"
   },
   "nav": {
     "setup": "Настройка",
