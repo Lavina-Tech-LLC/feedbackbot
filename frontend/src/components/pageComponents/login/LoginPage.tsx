@@ -54,18 +54,20 @@ export function LoginPage() {
     );
   });
 
-  const handleOAuthLogin = () => {
+  const handleOAuthLogin = async () => {
     const config = configRes?.data;
-    if (!config) return;
+    if (!config?.authorize_url) return;
 
-    const params = new URLSearchParams({
-      client_id: config.client_id,
-      redirect_uri: config.redirect_uri,
-      response_type: 'code',
-      scope: config.scope,
-    });
-
-    window.location.href = `${config.authorize_url}?${params.toString()}`;
+    try {
+      const res = await fetch(config.authorize_url);
+      const json = await res.json();
+      const googleUrl = json.data?.url ?? json.url;
+      if (googleUrl) {
+        window.location.href = googleUrl;
+      }
+    } catch {
+      // ignore fetch errors; user can retry
+    }
   };
 
   const handleForgotPassword = () => {

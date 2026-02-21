@@ -6,6 +6,8 @@ import { useNavigate } from '@tanstack/react-router';
 import { useExchangeToken } from '@/service';
 import { useAppDispatch } from '@/redux/store';
 import { setUser, setToken } from '@/redux/slices';
+import { api } from '@/api';
+import type { User } from '@/types';
 
 export function CallbackPage() {
   const { t } = useTranslation();
@@ -19,7 +21,24 @@ export function CallbackPage() {
     calledRef.current = true;
 
     const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
     const code = params.get('code');
+
+    if (token) {
+      // Auth provider redirected back with a JWT directly — use it.
+      dispatch(setToken(token));
+      api
+        .get<never, { data: User }>('/auth/me')
+        .then((res) => {
+          dispatch(setUser(res.data));
+          navigate({ to: '/' });
+        })
+        .catch(() => {
+          notifications.show({ title: t('common.error'), message: t('auth.loginError'), color: 'red' });
+          setTimeout(() => navigate({ to: '/login' }), 2000);
+        });
+      return;
+    }
 
     if (!code) {
       notifications.show({ title: t('common.error'), message: t('auth.loginError'), color: 'red' });
