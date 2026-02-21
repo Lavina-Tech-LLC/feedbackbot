@@ -72,7 +72,11 @@
     "confirmPasswordPlaceholder": "Parolni takrorlang",
     "passwordsMismatch": "Parollar mos kelmaydi",
     "register": "Ro'yxatdan o'tish",
-    "alreadyHaveAccount": "Hisobingiz bormi? Kirish"
+    "alreadyHaveAccount": "Hisobingiz bormi? Kirish",
+    "or": "yoki",
+    "forgotPassword": "Parolni unutdingizmi?",
+    "noAccount": "Hisobingiz yo'qmi? Ro'yxatdan o'ting",
+    "invalidCredentials": "Noto'g'ri email yoki parol"
   },
   "nav": {
     "setup": "Sozlash",

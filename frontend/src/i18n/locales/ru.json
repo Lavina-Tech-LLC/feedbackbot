@@ -72,7 +72,11 @@
     "confirmPasswordPlaceholder": "Повторите пароль",
     "passwordsMismatch": "Пароли не совпадают",
     "register": "Зарегистрироваться",
-    "alreadyHaveAccount": "Уже есть аккаунт? Войти"
+    "alreadyHaveAccount": "Уже есть аккаунт? Войти",
+    "or": "или",
+    "forgotPassword": "Забыли пароль?",
+    "noAccount": "Нет аккаунта? Зарегистрируйтесь",
+    "invalidCredentials": "Неверный email или пароль"
   },
   "nav": {
     "setup": "Настройка",

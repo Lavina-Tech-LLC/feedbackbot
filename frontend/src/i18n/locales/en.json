@@ -72,7 +72,11 @@
     "confirmPasswordPlaceholder": "Repeat your password",
     "passwordsMismatch": "Passwords do not match",
     "register": "Sign Up",
-    "alreadyHaveAccount": "Already have an account? Sign in"
+    "alreadyHaveAccount": "Already have an account? Sign in",
+    "or": "or",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account? Sign up",
+    "invalidCredentials": "Invalid email or password"
   },
   "nav": {
     "setup": "Setup",

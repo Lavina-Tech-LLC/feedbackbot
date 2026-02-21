@@ -1,6 +1,6 @@
 import { createRootRoute, createRoute, Outlet, redirect } from '@tanstack/react-router';
 import { Navbar } from '@/components/shared';
-import { SetupPage, BotConfigPage, GroupsPage, FeedbacksPage, LoginPage, CallbackPage } from '@/components/pageComponents';
+import { SetupPage, BotConfigPage, GroupsPage, FeedbacksPage, LoginPage, RegisterPage, CallbackPage } from '@/components/pageComponents';
 import { store } from '@/redux/store';
 
 const rootRoute = createRootRoute({
@@ -34,6 +34,12 @@ const loginRoute = createRoute({
   getParentRoute: () => authLayout,
   path: '/login',
   component: LoginPage,
+});
+
+const registerRoute = createRoute({
+  getParentRoute: () => authLayout,
+  path: '/register',
+  component: RegisterPage,
 });
 
 const callbackRoute = createRoute({
@@ -73,6 +79,6 @@ const feedbacksRoute = createRoute({
 });
 
 export const routeTree = rootRoute.addChildren([
-  authLayout.addChildren([loginRoute, callbackRoute]),
+  authLayout.addChildren([loginRoute, registerRoute, callbackRoute]),
   appLayout.addChildren([indexRoute, setupRoute, botSettingsRoute, groupsRoute, feedbacksRoute]),
 ]);
