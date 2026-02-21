@@ -24,6 +24,7 @@ export function RegisterPage() {
       password: '',
       confirmPassword: '',
     },
+    validateInputOnBlur: true,
     validate: {
       name: (v) => (v.trim().length < 2 ? t('auth.nameMinLength') : null),
       email: (v) => (/^\S+@\S+\.\S+$/.test(v) ? null : t('auth.invalidEmail')),

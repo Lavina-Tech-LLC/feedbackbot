@@ -98,7 +98,7 @@ func forwardToAuthProvider(path string, payload interface{}) (*http.Response, er
 		return nil, err
 	}
 
-	url := config.Confs.AuthProvider.BaseURL + path
+	url := config.Confs.AuthProvider.BaseURL + "/api/auth" + path
 	return http.Post(url, "application/json", bytes.NewReader(jsonBody))
 }
 

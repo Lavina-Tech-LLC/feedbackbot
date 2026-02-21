@@ -10,3 +10,9 @@ settings:
 
 jwt:
   accesssecret: "change-me-to-a-strong-secret"
+
+auth_provider:
+  baseurl: "https://auth.lavina.tech"
+  clientid: ""
+  clientsecret: ""
+  redirecturi: "https://feedbackbot.lavina.tech/auth/callback"
