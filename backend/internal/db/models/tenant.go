@@ -19,4 +19,11 @@ type (
 		Tenant      Tenant `gorm:"foreignKey:TenantID" json:"tenant,omitempty"`
 		gorm.Model
 	}
+
+	UserTenant struct {
+		UserID   string `gorm:"uniqueIndex;not null" json:"user_id"`
+		TenantID uint   `gorm:"not null" json:"tenant_id"`
+		Tenant   Tenant `gorm:"foreignKey:TenantID" json:"tenant,omitempty"`
+		gorm.Model
+	}
 )

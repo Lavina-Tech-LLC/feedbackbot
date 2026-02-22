@@ -3,10 +3,12 @@ package auth
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/config"
+	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
 	lvn "github.com/Lavina-Tech-LLC/lavinagopackage/v2"
 	"github.com/gin-gonic/gin"
 )
@@ -76,6 +78,15 @@ func Auth(c *gin.Context) {
 					c.Set("tenant_id", v)
 				}
 			}
+		}
+	}
+
+	// Fallback: if tenant_id is not in the JWT, check the local DB
+	if _, exists := c.Get("tenant_id"); !exists {
+		userID := fmt.Sprintf("%v", c.MustGet("user_id"))
+		var ut models.UserTenant
+		if err := models.DB.Where("user_id = ?", userID).First(&ut).Error; err == nil {
+			c.Set("tenant_id", ut.TenantID)
 		}
 	}
 

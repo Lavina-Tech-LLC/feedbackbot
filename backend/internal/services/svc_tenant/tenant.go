@@ -1,6 +1,12 @@
 package svc_tenant
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"github.com/Lavina-Tech-LLC/feedbackbot/internal/config"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
 	lvn "github.com/Lavina-Tech-LLC/lavinagopackage/v2"
 	"github.com/gin-gonic/gin"
@@ -28,7 +34,46 @@ func CreateTenant(c *gin.Context) {
 		return
 	}
 
+	// Associate the user with the newly created tenant
+	userID := fmt.Sprintf("%v", c.MustGet("user_id"))
+	authHeader := c.GetHeader("Authorization")
+
+	// Try to update tenant_id on the auth provider
+	if err := patchAuthProviderTenantID(authHeader, tenant.ID); err != nil {
+		// Auth provider doesn't support PATCH or failed — store locally
+		ut := models.UserTenant{
+			UserID:   userID,
+			TenantID: tenant.ID,
+		}
+		if dbErr := models.DB.Create(&ut).Error; dbErr != nil {
+			lvn.GinErr(c, 500, dbErr, "Failed to associate user with tenant")
+			return
+		}
+	}
+
 	c.Data(lvn.Res(201, tenant, ""))
+}
+
+// patchAuthProviderTenantID tries to PATCH the user's tenant_id on the auth provider.
+func patchAuthProviderTenantID(authHeader string, tenantID uint) error {
+	body, _ := json.Marshal(map[string]interface{}{"tenant_id": tenantID})
+	req, err := http.NewRequest(http.MethodPatch, config.Confs.AuthProvider.BaseURL+"/api/user/me", bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", authHeader)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		return fmt.Errorf("auth provider returned status %d", resp.StatusCode)
+	}
+	return nil
 }
 
 func GetTenant(c *gin.Context) {

@@ -10,6 +10,7 @@ func Migrate() {
 		&models.FeedbackConfig{},
 		&models.GroupUser{},
 		&models.Feedback{},
+		&models.UserTenant{},
 	)
 	if err != nil {
 		panic(err)
