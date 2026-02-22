@@ -2,9 +2,11 @@ package svc_tenant
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/config"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
@@ -38,8 +40,8 @@ func CreateTenant(c *gin.Context) {
 	userID := fmt.Sprintf("%v", c.MustGet("user_id"))
 	authHeader := c.GetHeader("Authorization")
 
-	// Try to update tenant_id on the auth provider
-	if err := patchAuthProviderTenantID(authHeader, tenant.ID); err != nil {
+	// Try to update tenant_id on the auth provider; never block tenant creation.
+	if err := patchAuthProviderTenantID(c.Request.Context(), authHeader, tenant.ID); err != nil {
 		// Auth provider doesn't support PATCH or failed — store locally
 		ut := models.UserTenant{
 			UserID:   userID,
@@ -55,9 +57,13 @@ func CreateTenant(c *gin.Context) {
 }
 
 // patchAuthProviderTenantID tries to PATCH the user's tenant_id on the auth provider.
-func patchAuthProviderTenantID(authHeader string, tenantID uint) error {
+// Uses a 5-second timeout so a slow/unresponsive auth provider cannot hang tenant creation.
+func patchAuthProviderTenantID(parent context.Context, authHeader string, tenantID uint) error {
+	ctx, cancel := context.WithTimeout(parent, 5*time.Second)
+	defer cancel()
+
 	body, _ := json.Marshal(map[string]interface{}{"tenant_id": tenantID})
-	req, err := http.NewRequest(http.MethodPatch, config.Confs.AuthProvider.BaseURL+"/api/user/me", bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPatch, config.Confs.AuthProvider.BaseURL+"/api/user/me", bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
