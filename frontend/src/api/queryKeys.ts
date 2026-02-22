@@ -1,7 +1,4 @@
 export const queryKeys = {
-  auth: {
-    config: () => ['auth', 'config'] as const,
-  },
   tenants: {
     all: () => ['tenants'] as const,
     byId: (id: string) => ['tenants', id] as const,

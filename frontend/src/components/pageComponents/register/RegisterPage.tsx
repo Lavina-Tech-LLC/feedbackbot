@@ -5,10 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useRegister } from '@/service';
 import { useAppDispatch } from '@/redux/store';
-import { setToken, setUser } from '@/redux/slices';
-import { api } from '@/api';
+import { setToken, setRefreshToken, setUser } from '@/redux/slices';
 import { useState } from 'react';
-import type { User } from '@/types';
 
 export function RegisterPage() {
   const { t } = useTranslation();
@@ -38,14 +36,10 @@ export function RegisterPage() {
     register.mutate(
       { name: values.name, email: values.email, password: values.password },
       {
-        onSuccess: async (res) => {
+        onSuccess: (res) => {
           dispatch(setToken(res.data.access_token));
-          try {
-            const meRes = await api.get<never, { data: User }>('/auth/me');
-            dispatch(setUser(meRes.data));
-          } catch {
-            dispatch(setUser(res.data));
-          }
+          dispatch(setRefreshToken(res.data.refresh_token));
+          dispatch(setUser(res.data.user));
           navigate({ to: '/' });
         },
         onError: (err) => {

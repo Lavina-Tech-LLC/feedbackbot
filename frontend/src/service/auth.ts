@@ -1,34 +1,34 @@
 import { api } from '@/api';
-import { queryKeys } from '@/api/queryKeys';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import type { AuthConfig, User } from '@/types';
+import { useMutation } from '@tanstack/react-query';
+import type { User } from '@/types';
 
-export const useAuthConfig = () =>
-  useQuery({
-    queryKey: queryKeys.auth.config(),
-    queryFn: () => api.get<never, { data: AuthConfig }>('/auth/config', { noAuth: true }),
-  });
-
-export const useExchangeToken = () =>
-  useMutation({
-    mutationFn: (data: { code: string; redirect_uri: string }) =>
-      api.post<never, { data: User }>('/auth/token', data, { noAuth: true }),
-  });
+interface AuthResponse {
+  data: {
+    access_token: string;
+    refresh_token: string;
+    user: User;
+  };
+}
 
 export const useRegister = () =>
   useMutation({
     mutationFn: (data: { name: string; email: string; password: string }) =>
-      api.post<never, { data: User & { access_token: string } }>('/auth/register', data, { noAuth: true }),
+      api.post<never, AuthResponse>('/auth/register', data, { noAuth: true }),
   });
 
 export const useLogin = () =>
   useMutation({
     mutationFn: (data: { email: string; password: string }) =>
-      api.post<never, { data: { access_token: string } }>('/auth/login', data, { noAuth: true }),
+      api.post<never, AuthResponse>('/auth/login', data, { noAuth: true }),
   });
 
-export const useForgotPassword = () =>
+export const useRefreshToken = () =>
   useMutation({
-    mutationFn: () =>
-      api.get<never, { data: { url: string } }>('/auth/forgot-password', { noAuth: true }),
+    mutationFn: (data: { refresh_token: string }) =>
+      api.post<never, AuthResponse>('/auth/refresh', data, { noAuth: true }),
+  });
+
+export const useMe = () =>
+  useMutation({
+    mutationFn: () => api.get<never, { data: User }>('/auth/me'),
   });

@@ -1,22 +1,18 @@
-import { Alert, Anchor, Button, Center, Divider, Paper, PasswordInput, Stack, TextInput, Title } from '@mantine/core';
+import { Alert, Anchor, Button, Center, Paper, PasswordInput, Stack, TextInput, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconAlertCircle, IconLogin } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { useAuthConfig, useForgotPassword, useLogin } from '@/service';
+import { useLogin } from '@/service';
 import { useAppDispatch } from '@/redux/store';
-import { setToken, setUser } from '@/redux/slices';
-import { api } from '@/api';
+import { setToken, setRefreshToken, setUser } from '@/redux/slices';
 import { useState } from 'react';
-import type { User } from '@/types';
 
 export function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const login = useLogin();
-  const forgotPassword = useForgotPassword();
-  const { data: configRes, isLoading: isConfigLoading } = useAuthConfig();
   const [error, setError] = useState('');
 
   const form = useForm({
@@ -35,14 +31,10 @@ export function LoginPage() {
     login.mutate(
       { email: values.email, password: values.password },
       {
-        onSuccess: async (res) => {
+        onSuccess: (res) => {
           dispatch(setToken(res.data.access_token));
-          try {
-            const meRes = await api.get<never, { data: User }>('/auth/me');
-            dispatch(setUser(meRes.data));
-          } catch {
-            // token set, user will be fetched on next load
-          }
+          dispatch(setRefreshToken(res.data.refresh_token));
+          dispatch(setUser(res.data.user));
           navigate({ to: '/' });
         },
         onError: (err) => {
@@ -53,30 +45,6 @@ export function LoginPage() {
       },
     );
   });
-
-  const handleOAuthLogin = async () => {
-    const config = configRes?.data;
-    if (!config?.authorize_url) return;
-
-    try {
-      const res = await fetch(config.authorize_url);
-      const json = await res.json();
-      const googleUrl = json.data?.url ?? json.url;
-      if (googleUrl) {
-        window.location.href = googleUrl;
-      }
-    } catch {
-      // ignore fetch errors; user can retry
-    }
-  };
-
-  const handleForgotPassword = () => {
-    forgotPassword.mutate(undefined, {
-      onSuccess: (res) => {
-        window.open(res.data.url, '_blank');
-      },
-    });
-  };
 
   return (
     <Center h="100vh">
@@ -106,10 +74,6 @@ export function LoginPage() {
               {...form.getInputProps('password')}
             />
 
-            <Anchor component="button" type="button" size="sm" onClick={handleForgotPassword}>
-              {t('auth.forgotPassword')}
-            </Anchor>
-
             <Button
               type="submit"
               fullWidth
@@ -118,19 +82,6 @@ export function LoginPage() {
               loading={login.isPending}
             >
               {t('auth.signIn')}
-            </Button>
-
-            <Divider label={t('auth.or')} labelPosition="center" />
-
-            <Button
-              fullWidth
-              size="md"
-              variant="outline"
-              leftSection={<IconLogin size={20} />}
-              onClick={handleOAuthLogin}
-              loading={isConfigLoading}
-            >
-              {t('auth.loginWithLavina')}
             </Button>
 
             <Anchor component={Link} to="/register" ta="center" size="sm">

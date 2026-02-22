@@ -48,15 +48,7 @@ export interface Feedback {
 export interface User {
   id: number;
   tenant_id: number;
-  access_token: string;
   name: string;
   email: string;
   role: string;
-}
-
-export interface AuthConfig {
-  authorize_url: string;
-  client_id: string;
-  redirect_uri: string;
-  scope: string;
 }
