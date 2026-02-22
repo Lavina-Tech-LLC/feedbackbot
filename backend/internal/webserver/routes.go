@@ -17,11 +17,9 @@ func setRoutes(router *gin.Engine) {
 	})
 
 	authGroup := router.Group("/auth")
-	authGroup.GET("/config", auth.GetConfig)
 	authGroup.POST("/login", auth.Login)
 	authGroup.POST("/register", auth.Register)
-	authGroup.POST("/token", auth.ExchangeToken)
-	authGroup.GET("/forgot-password", auth.GetForgotPasswordURL)
+	authGroup.POST("/refresh", auth.RefreshToken)
 	authGroup.GET("/me", auth.Auth, auth.GetMe)
 
 	tenants := router.Group("/tenants")

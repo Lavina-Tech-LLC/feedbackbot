@@ -1,19 +1,17 @@
 package auth
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/config"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
 	lvn "github.com/Lavina-Tech-LLC/lavinagopackage/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-// Auth validates the Bearer token by forwarding it to the auth provider.
+// Auth validates the Bearer JWT locally using the configured secret.
 // Claims (user_id, email, role, name, tenant_id) are set in the Gin context for downstream handlers.
 func Auth(c *gin.Context) {
 	header := c.GetHeader("Authorization")
@@ -23,62 +21,41 @@ func Auth(c *gin.Context) {
 		return
 	}
 
-	req, err := http.NewRequest("GET", config.Confs.AuthProvider.BaseURL+"/api/user/me", nil)
-	if err != nil {
-		c.Data(lvn.Res(401, "", "Invalid or expired token"))
-		c.Abort()
-		return
-	}
-	req.Header.Set("Authorization", header)
+	tokenStr := strings.TrimPrefix(header, "Bearer ")
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		if resp != nil {
-			resp.Body.Close()
+	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
-		c.Data(lvn.Res(401, "", "Invalid or expired token"))
-		c.Abort()
-		return
-	}
-	defer resp.Body.Close()
-
-	var result map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return []byte(config.Confs.Settings.JWTSecret), nil
+	})
+	if err != nil || !token.Valid {
 		c.Data(lvn.Res(401, "", "Invalid or expired token"))
 		c.Abort()
 		return
 	}
 
-	// Auth provider returns {"user": {...}} format
-	data, _ := result["user"].(map[string]interface{})
-	if data == nil {
-		data, _ = result["data"].(map[string]interface{})
-	}
-	if data == nil {
-		data = result
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		c.Data(lvn.Res(401, "", "Invalid token claims"))
+		c.Abort()
+		return
 	}
 
-	// Map "id" → "user_id" for consistency
-	if v, ok := data["id"]; ok {
+	if v, ok := claims["user_id"]; ok {
 		c.Set("user_id", v)
 	}
-	for _, key := range []string{"email", "role", "name"} {
-		if val, ok := data[key]; ok {
-			c.Set(key, val)
-		}
+	if v, ok := claims["email"]; ok {
+		c.Set("email", v)
 	}
-
-	// Extract tenant_id from the JWT claims (auth provider doesn't return it in /api/user/me)
-	tokenStr := strings.TrimPrefix(header, "Bearer ")
-	if parts := strings.Split(tokenStr, "."); len(parts) == 3 {
-		if payload, err := base64DecodeSegment(parts[1]); err == nil {
-			var claims map[string]interface{}
-			if json.Unmarshal(payload, &claims) == nil {
-				if v, ok := claims["tenant_id"]; ok {
-					c.Set("tenant_id", v)
-				}
-			}
-		}
+	if v, ok := claims["name"]; ok {
+		c.Set("name", v)
+	}
+	if v, ok := claims["role"]; ok {
+		c.Set("role", v)
+	}
+	if v, ok := claims["tenant_id"]; ok {
+		c.Set("tenant_id", v)
 	}
 
 	// Fallback: if tenant_id is not in the JWT, check the local DB
@@ -91,12 +68,4 @@ func Auth(c *gin.Context) {
 	}
 
 	c.Next()
-}
-
-// base64DecodeSegment decodes a JWT base64url segment.
-func base64DecodeSegment(seg string) ([]byte, error) {
-	if l := len(seg) % 4; l > 0 {
-		seg += strings.Repeat("=", 4-l)
-	}
-	return base64.URLEncoding.DecodeString(seg)
 }

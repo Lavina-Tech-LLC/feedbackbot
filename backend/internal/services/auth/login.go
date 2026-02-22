@@ -1,17 +1,16 @@
 package auth
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
+	"strings"
+	"time"
 
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/config"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
 	lvn "github.com/Lavina-Tech-LLC/lavinagopackage/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type loginRequest struct {
@@ -25,40 +24,11 @@ type registerRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-// Login proxies a login request to the auth provider and returns JWT tokens.
-func Login(c *gin.Context) {
-	var req loginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.Data(lvn.Res(400, "", "email and password are required"))
-		return
-	}
-
-	resp, err := forwardToAuthProvider("/login", req)
-	if err != nil {
-		c.Data(lvn.Res(502, "", "auth provider unavailable"))
-		return
-	}
-	defer resp.Body.Close()
-
-	body, _ := io.ReadAll(resp.Body)
-
-	if resp.StatusCode != http.StatusOK {
-		c.Data(lvn.Res(resp.StatusCode, "", extractError(body)))
-		return
-	}
-
-	data, err := parseAuthResponse(body)
-	if err != nil {
-		c.Data(lvn.Res(500, "", "failed to parse auth response"))
-		return
-	}
-
-	ensureTenant(data)
-
-	c.Data(lvn.Res(200, data, ""))
+type refreshRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
-// Register proxies a registration request to the auth provider and returns JWT tokens.
+// Register creates a new user with bcrypt-hashed password and returns JWT tokens.
 func Register(c *gin.Context) {
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -66,149 +36,193 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	resp, err := forwardToAuthProvider("/register", req)
-	if err != nil {
-		c.Data(lvn.Res(502, "", "auth provider unavailable"))
-		return
-	}
-	defer resp.Body.Close()
-
-	body, _ := io.ReadAll(resp.Body)
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		c.Data(lvn.Res(resp.StatusCode, "", extractError(body)))
+	// Check if user already exists
+	var existing models.User
+	if err := models.DB.Where("email = ?", req.Email).First(&existing).Error; err == nil {
+		c.Data(lvn.Res(409, "", "email already registered"))
 		return
 	}
 
-	data, err := parseAuthResponse(body)
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.Data(lvn.Res(500, "", "failed to parse auth response"))
+		c.Data(lvn.Res(500, "", "failed to hash password"))
 		return
 	}
 
-	ensureTenant(data)
+	user := models.User{
+		Email:        req.Email,
+		Name:         req.Name,
+		PasswordHash: string(hash),
+		Role:         "user",
+	}
+	if err := models.DB.Create(&user).Error; err != nil {
+		c.Data(lvn.Res(500, "", "failed to create user"))
+		return
+	}
 
-	c.Data(lvn.Res(200, data, ""))
-}
+	// Auto-create tenant from email domain
+	tenant := newTenantFromEmail(user.Email)
+	models.DB.Create(&tenant)
+	models.DB.Create(&models.UserTenant{
+		UserID:   fmt.Sprintf("%d", user.ID),
+		TenantID: tenant.ID,
+	})
 
-// forwardToAuthProvider sends a JSON POST request to the auth provider.
-func forwardToAuthProvider(path string, payload interface{}) (*http.Response, error) {
-	jsonBody, err := json.Marshal(payload)
+	tokens, err := generateTokens(user, tenant.ID)
 	if err != nil {
-		return nil, err
+		c.Data(lvn.Res(500, "", "failed to generate tokens"))
+		return
 	}
 
-	url := config.Confs.AuthProvider.BaseURL + "/api/auth" + path
-	return http.Post(url, "application/json", bytes.NewReader(jsonBody))
+	c.Data(lvn.Res(200, tokens, ""))
 }
 
-// parseAuthResponse parses the auth provider JSON response and extracts claims from the access token.
-func parseAuthResponse(body []byte) (gin.H, error) {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(body, &raw); err != nil {
-		return nil, err
+// Login finds a user by email, verifies the bcrypt password, and returns JWT tokens.
+func Login(c *gin.Context) {
+	var req loginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Data(lvn.Res(400, "", "email and password are required"))
+		return
 	}
 
-	// The auth provider nests tokens under "tokens", but fall back to "data" or top level.
-	var tokens map[string]interface{}
-	if t, ok := raw["tokens"].(map[string]interface{}); ok {
-		tokens = t
-	} else if d, ok := raw["data"].(map[string]interface{}); ok {
-		tokens = d
-	} else {
-		tokens = raw
+	var user models.User
+	if err := models.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		c.Data(lvn.Res(401, "", "invalid email or password"))
+		return
 	}
 
-	accessToken, _ := tokens["access_token"].(string)
-	refreshToken, _ := tokens["refresh_token"].(string)
-
-	result := gin.H{
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+		c.Data(lvn.Res(401, "", "invalid email or password"))
+		return
 	}
 
-	// Extract user info from the "user" object if present.
-	if user, ok := raw["user"].(map[string]interface{}); ok {
-		if v, ok := user["id"]; ok {
-			result["user_id"] = v
-		}
-		if v, ok := user["email"].(string); ok {
-			result["email"] = v
-		}
-		if v, ok := user["name"].(string); ok {
-			result["name"] = v
-		}
-		if v, ok := user["role"].(string); ok {
-			result["role"] = v
-		}
+	// Look up tenant
+	var tenantID uint
+	var ut models.UserTenant
+	if err := models.DB.Where("user_id = ?", fmt.Sprintf("%d", user.ID)).First(&ut).Error; err == nil {
+		tenantID = ut.TenantID
 	}
 
-	// Extract claims from the access token (without verification — the auth provider already signed it).
-	if accessToken != "" {
-		claims := jwt.MapClaims{}
-		parser := jwt.NewParser(jwt.WithoutClaimsValidation())
-		if t, _, err := parser.ParseUnverified(accessToken, claims); err == nil && t != nil {
-			if _, hasID := result["user_id"]; !hasID {
-				if v, ok := claims["user_id"]; ok {
-					result["user_id"] = v
-				}
-			}
-			if _, hasEmail := result["email"]; !hasEmail {
-				if v, ok := claims["email"]; ok {
-					result["email"] = v
-				}
-			}
-			if v, ok := claims["tenant_id"]; ok {
-				result["tenant_id"] = v
-			}
-			if _, hasName := result["name"]; !hasName {
-				if v, ok := claims["name"]; ok {
-					result["name"] = v
-				}
-			}
-		}
+	tokens, err := generateTokens(user, tenantID)
+	if err != nil {
+		c.Data(lvn.Res(500, "", "failed to generate tokens"))
+		return
 	}
 
-	return result, nil
+	c.Data(lvn.Res(200, tokens, ""))
 }
 
-// ensureTenant auto-creates a tenant in the DB if the tenant_id from the token doesn't exist yet.
-func ensureTenant(data gin.H) {
-	tidRaw, ok := data["tenant_id"]
+// RefreshToken validates a refresh token and issues new access + refresh tokens.
+func RefreshToken(c *gin.Context) {
+	var req refreshRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Data(lvn.Res(400, "", "refresh_token is required"))
+		return
+	}
+
+	token, err := jwt.Parse(req.RefreshToken, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+		return []byte(config.Confs.Settings.JWTSecret), nil
+	})
+	if err != nil || !token.Valid {
+		c.Data(lvn.Res(401, "", "invalid or expired refresh token"))
+		return
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
+		c.Data(lvn.Res(401, "", "invalid token claims"))
+		return
+	}
+
+	if claims["type"] != "refresh" {
+		c.Data(lvn.Res(401, "", "invalid token type"))
+		return
+	}
+
+	// Look up user by ID from claims
+	userIDRaw, ok := claims["user_id"]
+	if !ok {
+		c.Data(lvn.Res(401, "", "invalid token claims"))
+		return
+	}
+
+	var userID uint
+	switch v := userIDRaw.(type) {
+	case float64:
+		userID = uint(v)
+	}
+
+	var user models.User
+	if err := models.DB.First(&user, userID).Error; err != nil {
+		c.Data(lvn.Res(401, "", "user not found"))
 		return
 	}
 
 	var tenantID uint
-	switch v := tidRaw.(type) {
-	case float64:
-		tenantID = uint(v)
-	case uint:
-		tenantID = v
+	var ut models.UserTenant
+	if err := models.DB.Where("user_id = ?", fmt.Sprintf("%d", user.ID)).First(&ut).Error; err == nil {
+		tenantID = ut.TenantID
 	}
-	if tenantID == 0 {
+
+	tokens, err := generateTokens(user, tenantID)
+	if err != nil {
+		c.Data(lvn.Res(500, "", "failed to generate tokens"))
 		return
 	}
 
-	var tenant models.Tenant
-	if err := models.DB.First(&tenant, tenantID).Error; err != nil {
-		emailStr := fmt.Sprintf("%v", data["email"])
-		tenant = newTenantFromEmail(emailStr)
-		models.DB.Create(&tenant)
-	}
+	c.Data(lvn.Res(200, tokens, ""))
 }
 
-// extractError tries to pull an error message from the auth provider JSON response.
-func extractError(body []byte) string {
-	var raw map[string]interface{}
-	if err := json.Unmarshal(body, &raw); err != nil {
-		return "authentication failed"
+func generateTokens(user models.User, tenantID uint) (gin.H, error) {
+	secret := []byte(config.Confs.Settings.JWTSecret)
+
+	accessClaims := jwt.MapClaims{
+		"user_id":   user.ID,
+		"email":     user.Email,
+		"name":      user.Name,
+		"role":      user.Role,
+		"tenant_id": tenantID,
+		"type":      "access",
+		"exp":       time.Now().Add(24 * time.Hour).Unix(),
+		"iat":       time.Now().Unix(),
 	}
-	if msg, ok := raw["message"].(string); ok && msg != "" {
-		return msg
+	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString(secret)
+	if err != nil {
+		return nil, err
 	}
-	if msg, ok := raw["error"].(string); ok && msg != "" {
-		return msg
+
+	refreshClaims := jwt.MapClaims{
+		"user_id": user.ID,
+		"type":    "refresh",
+		"exp":     time.Now().Add(7 * 24 * time.Hour).Unix(),
+		"iat":     time.Now().Unix(),
 	}
-	return "authentication failed"
+	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString(secret)
+	if err != nil {
+		return nil, err
+	}
+
+	return gin.H{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+		"user_id":       user.ID,
+		"email":         user.Email,
+		"name":          user.Name,
+		"role":          user.Role,
+		"tenant_id":     tenantID,
+	}, nil
+}
+
+func newTenantFromEmail(email string) models.Tenant {
+	domain := "unknown"
+	if parts := strings.SplitN(email, "@", 2); len(parts) == 2 {
+		domain = parts[1]
+	}
+	return models.Tenant{
+		Name: domain,
+		Slug: domain,
+	}
 }

@@ -20,6 +20,14 @@ type (
 		gorm.Model
 	}
 
+	User struct {
+		Email        string `gorm:"uniqueIndex;not null" json:"email"`
+		Name         string `gorm:"not null" json:"name"`
+		PasswordHash string `gorm:"not null" json:"-"`
+		Role         string `gorm:"default:user" json:"role"`
+		gorm.Model
+	}
+
 	UserTenant struct {
 		UserID   string `gorm:"uniqueIndex;not null" json:"user_id"`
 		TenantID uint   `gorm:"not null" json:"tenant_id"`
