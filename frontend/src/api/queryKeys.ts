@@ -9,7 +9,6 @@ export const queryKeys = {
   },
   groups: {
     all: () => ['groups'] as const,
-    byTenant: (tenantId: string) => ['groups', 'tenant', tenantId] as const,
     byId: (id: string) => ['groups', id] as const,
   },
   feedbacks: {

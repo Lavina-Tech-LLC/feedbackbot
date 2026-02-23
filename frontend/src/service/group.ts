@@ -3,11 +3,10 @@ import { queryKeys } from '@/api/queryKeys';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Group, FeedbackConfig } from '@/types';
 
-export const useGetGroups = (tenantId: string) =>
+export const useGetGroups = () =>
   useQuery({
-    queryKey: queryKeys.groups.byTenant(tenantId),
-    queryFn: () => api.get<never, { data: Group[] }>(`/groups?tenant_id=${tenantId}`),
-    enabled: !!tenantId,
+    queryKey: queryKeys.groups.all(),
+    queryFn: () => api.get<never, { data: Group[] }>('/groups'),
   });
 
 export const useUpdateGroup = () => {

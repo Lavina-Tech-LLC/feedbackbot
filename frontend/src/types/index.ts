@@ -1,48 +1,48 @@
 export interface Tenant {
-  ID: number;
+  id: number;
   name: string;
   slug: string;
-  CreatedAt: string;
-  UpdatedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Bot {
-  ID: number;
+  id: number;
   tenant_id: number;
   bot_username: string;
   bot_name: string;
   verified: boolean;
-  CreatedAt: string;
-  UpdatedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Group {
-  ID: number;
+  id: number;
   tenant_id: number;
   bot_id: number;
   chat_id: number;
   title: string;
   type: string;
   is_active: boolean;
-  CreatedAt: string;
-  UpdatedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface FeedbackConfig {
-  ID: number;
+  id: number;
   group_id: number;
   post_to_group: boolean;
   forum_topic_id: number | null;
 }
 
 export interface Feedback {
-  ID: number;
+  id: number;
   tenant_id: number;
   group_id: number;
   message: string;
   admin_only: boolean;
   posted: boolean;
-  CreatedAt: string;
+  createdAt: string;
 }
 
 export interface User {

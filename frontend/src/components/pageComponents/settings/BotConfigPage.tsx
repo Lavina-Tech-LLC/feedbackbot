@@ -62,7 +62,7 @@ export function BotConfigPage() {
   });
 
   const handleDelete = (bot: Bot) => {
-    deleteBot.mutate(bot.ID, {
+    deleteBot.mutate(bot.id, {
       onSuccess: () => {
         notifications.show({
           title: t('common.success'),
@@ -107,7 +107,7 @@ export function BotConfigPage() {
               <Text c="dimmed">No bots configured yet.</Text>
             ) : (
               bots.map((bot) => (
-                <Group key={bot.ID} justify="space-between">
+                <Group key={bot.id} justify="space-between">
                   <Group>
                     <IconRobot size={20} />
                     <div>

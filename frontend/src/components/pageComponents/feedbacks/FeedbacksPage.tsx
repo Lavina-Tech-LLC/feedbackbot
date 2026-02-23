@@ -20,7 +20,6 @@ import { DatePickerInput } from '@mantine/dates';
 import { IconLock, IconWorld, IconCalendar, IconSearch, IconDownload } from '@tabler/icons-react';
 import { useGetFeedbacks, getExportCsvUrl } from '@/service/feedback';
 import { useGetGroups } from '@/service/group';
-import { useCurrentTenant } from '@/utils/useCurrentTenant';
 import type { Feedback } from '@/types';
 import '@mantine/dates/styles.css';
 
@@ -33,9 +32,8 @@ export function FeedbacksPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebouncedValue(search, 300);
 
-  const tenantId = useCurrentTenant();
-  const { data: groupsData } = useGetGroups(tenantId);
-  const groups = (groupsData as { data: { ID: number; title: string }[] } | undefined)?.data ?? [];
+  const { data: groupsData } = useGetGroups();
+  const groups = (groupsData as { data: { id: number; title: string }[] } | undefined)?.data ?? [];
 
   const feedbackParams = {
     groupId: selectedGroup,
@@ -80,7 +78,7 @@ export function FeedbacksPage() {
             <Select
               label={t('feedbacks.selectGroup')}
               placeholder={t('feedbacks.selectGroupPlaceholder')}
-              data={groups.map((g) => ({ value: String(g.ID), label: g.title }))}
+              data={groups.map((g) => ({ value: String(g.id), label: g.title }))}
               value={selectedGroup}
               onChange={(v) => {
                 setSelectedGroup(v ?? '');
@@ -136,7 +134,7 @@ export function FeedbacksPage() {
           )}
 
           {feedbacks.map((fb) => (
-            <Card key={fb.ID} shadow="xs" padding="sm" radius="sm" withBorder>
+            <Card key={fb.id} shadow="xs" padding="sm" radius="sm" withBorder>
               <Group justify="space-between" mb="xs">
                 <Group gap="xs">
                   {fb.admin_only ? (
@@ -155,7 +153,7 @@ export function FeedbacksPage() {
                   )}
                 </Group>
                 <Text size="xs" c="dimmed">
-                  {new Date(fb.CreatedAt).toLocaleString()}
+                  {new Date(fb.createdAt).toLocaleString()}
                 </Text>
               </Group>
               <Text>{fb.message}</Text>

@@ -18,13 +18,11 @@ import {
 } from '@mantine/core';
 import { IconSettings } from '@tabler/icons-react';
 import { useGetGroups, useUpdateGroup, useUpdateGroupConfig } from '@/service/group';
-import { useCurrentTenant } from '@/utils/useCurrentTenant';
 import type { Group } from '@/types';
 
 export function GroupsPage() {
   const { t } = useTranslation();
-  const tenantId = useCurrentTenant();
-  const { data, isLoading } = useGetGroups(tenantId);
+  const { data, isLoading } = useGetGroups();
   const updateGroup = useUpdateGroup();
   const updateConfig = useUpdateGroupConfig();
 
@@ -35,7 +33,7 @@ export function GroupsPage() {
   const groups: Group[] = (data as { data: Group[] } | undefined)?.data ?? [];
 
   const handleToggleActive = (group: Group) => {
-    updateGroup.mutate({ id: group.ID, data: { is_active: !group.is_active } });
+    updateGroup.mutate({ id: group.id, data: { is_active: !group.is_active } });
   };
 
   const openConfig = (group: Group) => {
@@ -48,7 +46,7 @@ export function GroupsPage() {
     if (!configModal) return;
     updateConfig.mutate(
       {
-        groupId: configModal.ID,
+        groupId: configModal.id,
         data: {
           post_to_group: postToGroup,
           forum_topic_id: forumTopicId ? Number(forumTopicId) : undefined,
@@ -83,7 +81,7 @@ export function GroupsPage() {
             </Table.Thead>
             <Table.Tbody>
               {groups.map((group) => (
-                <Table.Tr key={group.ID}>
+                <Table.Tr key={group.id}>
                   <Table.Td>{group.title}</Table.Td>
                   <Table.Td>
                     <Badge variant="light">{group.type}</Badge>
