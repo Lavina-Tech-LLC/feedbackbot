@@ -34,7 +34,13 @@ export function LoginPage() {
         onSuccess: (res) => {
           dispatch(setToken(res.data.access_token));
           dispatch(setRefreshToken(res.data.refresh_token));
-          dispatch(setUser(res.data.user));
+          dispatch(setUser({
+            id: res.data.user_id,
+            email: res.data.email,
+            name: res.data.name,
+            role: res.data.role,
+            tenant_id: res.data.tenant_id,
+          }));
           navigate({ to: '/' });
         },
         onError: (err) => {

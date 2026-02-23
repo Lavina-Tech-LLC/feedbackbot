@@ -7,7 +7,11 @@ interface AuthResponse {
   data: {
     access_token: string;
     refresh_token: string;
-    user: User;
+    user_id: number;
+    email: string;
+    name: string;
+    role: string;
+    tenant_id: number;
   };
 }
 
