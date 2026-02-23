@@ -62,11 +62,25 @@ type getUpdatesResponse struct {
 	Result []Update `json:"result"`
 }
 
+// StopAll signals all polling goroutines to stop.
+var stopCh = make(chan struct{})
+
+func StopAll() {
+	close(stopCh)
+}
+
 func StartPolling(bot models.Bot) {
 	log.Printf("[tgbot] Starting polling for bot @%s (ID: %d)", bot.BotUsername, bot.ID)
 	offset := int64(0)
 
 	for {
+		select {
+		case <-stopCh:
+			log.Printf("[tgbot] Stopping polling for bot @%s", bot.BotUsername)
+			return
+		default:
+		}
+
 		updates, err := getUpdates(bot.Token, offset)
 		if err != nil {
 			log.Printf("[tgbot] Error getting updates: %v", err)

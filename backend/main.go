@@ -22,4 +22,6 @@ func main() {
 	}
 
 	lvn.WaitExitSignal()
+	log.Println("[main] Shutting down bot polling...")
+	tgbot.StopAll()
 }

@@ -1,8 +1,6 @@
 package svc_tenant
 
 import (
-	"fmt"
-
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
 	lvn "github.com/Lavina-Tech-LLC/lavinagopackage/v2"
 	"github.com/gin-gonic/gin"
@@ -36,7 +34,11 @@ func CreateTenant(c *gin.Context) {
 		c.Data(lvn.Res(401, "", "user_id not found in context"))
 		return
 	}
-	userID := fmt.Sprintf("%v", uid)
+	var userID uint
+	switch v := uid.(type) {
+	case float64:
+		userID = uint(v)
+	}
 
 	ut := models.UserTenant{
 		UserID:   userID,

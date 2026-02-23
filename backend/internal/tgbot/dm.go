@@ -37,6 +37,12 @@ func handlePrivateMessage(bot models.Bot, msg *Message) {
 		return
 	}
 
+	const maxFeedbackLen = 4000
+	if len(text) > maxFeedbackLen {
+		sendMessage(bot.Token, msg.Chat.ID, "Your message is too long. Please keep it under 4000 characters.")
+		return
+	}
+
 	// Find groups this user belongs to (via bot's tenant)
 	var groups []models.Group
 	models.DB.Where("bot_id = ? AND is_active = ?", bot.ID, true).Find(&groups)
@@ -55,7 +61,7 @@ func handlePrivateMessage(bot models.Bot, msg *Message) {
 	// Multiple groups — store pending feedback and show keyboard
 	// For now, use the first group (TODO: implement inline keyboard picker in future iteration)
 	// Store in a simple way: use callback data pattern
-	storePendingFeedback(userID, text, adminOnly)
+	storePendingFeedback(bot.ID, userID, text, adminOnly)
 
 	var keyboard [][]inlineButton
 	for _, g := range groups {
@@ -115,24 +121,32 @@ func submitFeedback(bot models.Bot, chatID int64, telegramUserID int64, group mo
 	}
 }
 
-// Simple in-memory pending feedback store
-var pendingFeedback = make(map[int64]pendingFB)
-
-type pendingFB struct {
-	Text      string
-	AdminOnly bool
-}
-
-func storePendingFeedback(userID int64, text string, adminOnly bool) {
-	pendingFeedback[userID] = pendingFB{Text: text, AdminOnly: adminOnly}
-}
-
-func getPendingFeedback(userID int64) (pendingFB, bool) {
-	fb, ok := pendingFeedback[userID]
-	if ok {
-		delete(pendingFeedback, userID)
+func storePendingFeedback(botID uint, userID int64, text string, adminOnly bool) {
+	pf := models.PendingFeedback{
+		TelegramUserID: userID,
+		BotID:          botID,
+		Text:           text,
+		AdminOnly:      adminOnly,
 	}
-	return fb, ok
+	var existing models.PendingFeedback
+	if err := models.DB.Where("telegram_user_id = ?", userID).First(&existing).Error; err == nil {
+		models.DB.Model(&existing).Updates(map[string]interface{}{
+			"bot_id":     botID,
+			"text":       text,
+			"admin_only": adminOnly,
+		})
+	} else {
+		models.DB.Create(&pf)
+	}
+}
+
+func getPendingFeedback(userID int64) (models.PendingFeedback, bool) {
+	var pf models.PendingFeedback
+	if err := models.DB.Where("telegram_user_id = ?", userID).First(&pf).Error; err != nil {
+		return pf, false
+	}
+	models.DB.Delete(&pf)
+	return pf, true
 }
 
 type inlineButton struct {

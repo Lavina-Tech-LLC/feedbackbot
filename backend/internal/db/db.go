@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/config"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
@@ -10,6 +11,10 @@ import (
 )
 
 func init() {
+	if os.Getenv("FEEDBACKBOT_TEST") == "1" {
+		return
+	}
+
 	cfg := config.Confs.DB
 	dsn := fmt.Sprintf(
 		"user=%s password=%s host=%s port=%s dbname=%s sslmode=disable TimeZone=Asia/Tashkent",

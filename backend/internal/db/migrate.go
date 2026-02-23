@@ -12,6 +12,7 @@ func Migrate() {
 		&models.Feedback{},
 		&models.User{},
 		&models.UserTenant{},
+		&models.PendingFeedback{},
 	)
 	if err != nil {
 		panic(err)

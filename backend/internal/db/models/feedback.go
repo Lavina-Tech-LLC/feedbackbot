@@ -22,4 +22,12 @@ type (
 		Sender    GroupUser `gorm:"foreignKey:SenderID" json:"-"` // Never exposed
 		gorm.Model
 	}
+
+	PendingFeedback struct {
+		TelegramUserID int64  `gorm:"uniqueIndex;not null" json:"telegram_user_id"`
+		BotID          uint   `gorm:"not null" json:"bot_id"`
+		Text           string `gorm:"not null" json:"text"`
+		AdminOnly      bool   `gorm:"default:false" json:"admin_only"`
+		gorm.Model
+	}
 )

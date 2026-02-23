@@ -1,5 +1,6 @@
 import { api } from '@/api';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { store } from '@/redux/store';
 import type { User } from '@/types';
 
 interface AuthResponse {
@@ -29,6 +30,8 @@ export const useRefreshToken = () =>
   });
 
 export const useMe = () =>
-  useMutation({
-    mutationFn: () => api.get<never, { data: User }>('/auth/me'),
+  useQuery({
+    queryKey: ['auth', 'me'],
+    queryFn: () => api.get<never, { data: User }>('/auth/me'),
+    enabled: !!store.getState().auth.token,
   });

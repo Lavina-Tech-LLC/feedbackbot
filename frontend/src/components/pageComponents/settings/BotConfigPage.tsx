@@ -10,20 +10,23 @@ import {
   Group,
   Text,
   ActionIcon,
+  Loader,
+  Center,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { IconTrash, IconRobot } from '@tabler/icons-react';
-import { useCreateBot } from '@/service';
+import { useGetBots, useCreateBot, useDeleteBot } from '@/service';
 import { useCurrentTenant } from '@/utils/useCurrentTenant';
 import type { Bot } from '@/types';
-import { useState } from 'react';
 
 export function BotConfigPage() {
   const { t } = useTranslation();
   const tenantId = useCurrentTenant();
   const createBot = useCreateBot();
-  const [bots, setBots] = useState<Bot[]>([]);
+  const deleteBot = useDeleteBot();
+  const { data: botsData, isLoading } = useGetBots();
+  const bots: Bot[] = (botsData as { data: Bot[] } | undefined)?.data ?? [];
 
   const form = useForm({
     initialValues: {
@@ -40,7 +43,6 @@ export function BotConfigPage() {
       {
         onSuccess: (res) => {
           const bot = (res as { data: Bot }).data;
-          setBots((prev) => [...prev, bot]);
           form.reset();
           notifications.show({
             title: t('common.success'),
@@ -58,6 +60,18 @@ export function BotConfigPage() {
       },
     );
   });
+
+  const handleDelete = (bot: Bot) => {
+    deleteBot.mutate(bot.ID, {
+      onSuccess: () => {
+        notifications.show({
+          title: t('common.success'),
+          message: `Bot @${bot.bot_username} removed`,
+          color: 'green',
+        });
+      },
+    });
+  };
 
   return (
     <Container size="sm" mt="xl">
@@ -82,11 +96,17 @@ export function BotConfigPage() {
           </form>
         </Paper>
 
-        {bots.length > 0 && (
-          <Paper shadow="sm" p="xl" radius="md">
-            <Stack>
-              <Title order={3}>Bots</Title>
-              {bots.map((bot) => (
+        <Paper shadow="sm" p="xl" radius="md">
+          <Stack>
+            <Title order={3}>Bots</Title>
+            {isLoading ? (
+              <Center>
+                <Loader size="sm" />
+              </Center>
+            ) : bots.length === 0 ? (
+              <Text c="dimmed">No bots configured yet.</Text>
+            ) : (
+              bots.map((bot) => (
                 <Group key={bot.ID} justify="space-between">
                   <Group>
                     <IconRobot size={20} />
@@ -101,15 +121,20 @@ export function BotConfigPage() {
                     <Badge color={bot.verified ? 'green' : 'red'}>
                       {bot.verified ? t('bot.verified') : t('bot.notVerified')}
                     </Badge>
-                    <ActionIcon color="red" variant="subtle">
+                    <ActionIcon
+                      color="red"
+                      variant="subtle"
+                      onClick={() => handleDelete(bot)}
+                      loading={deleteBot.isPending}
+                    >
                       <IconTrash size={16} />
                     </ActionIcon>
                   </Group>
                 </Group>
-              ))}
-            </Stack>
-          </Paper>
-        )}
+              ))
+            )}
+          </Stack>
+        </Paper>
       </Stack>
     </Container>
   );

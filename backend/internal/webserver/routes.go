@@ -22,11 +22,12 @@ func setRoutes(router *gin.Engine) {
 	authGroup.POST("/refresh", auth.RefreshToken)
 	authGroup.GET("/me", auth.Auth, auth.GetMe)
 
-	tenants := router.Group("/tenants")
+	tenants := router.Group("/tenants", auth.Auth)
 	tenants.POST("", svc_tenant.CreateTenant)
 	tenants.GET("/:id", svc_tenant.GetTenant)
 
 	bots := router.Group("/bots", auth.Auth, services.TenantMiddleware)
+	bots.GET("", svc_tenant.GetBots)
 	bots.POST("", svc_tenant.CreateBot)
 	bots.GET("/:id", svc_tenant.GetBot)
 	bots.DELETE("/:id", svc_tenant.DeleteBot)

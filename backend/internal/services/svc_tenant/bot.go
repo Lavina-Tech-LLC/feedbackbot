@@ -93,6 +93,15 @@ func CreateBot(c *gin.Context) {
 	c.Data(lvn.Res(201, bot, ""))
 }
 
+func GetBots(c *gin.Context) {
+	tenantID := services.GetTenantID(c)
+
+	var bots []models.Bot
+	models.DB.Scopes(db.TenantScope(tenantID)).Find(&bots)
+
+	c.Data(lvn.Res(200, bots, ""))
+}
+
 func GetBot(c *gin.Context) {
 	id := c.Param("id")
 	tenantID := services.GetTenantID(c)

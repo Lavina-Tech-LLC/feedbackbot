@@ -3,6 +3,12 @@ import { queryKeys } from '@/api/queryKeys';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Bot } from '@/types';
 
+export const useGetBots = () =>
+  useQuery({
+    queryKey: queryKeys.bots.all(),
+    queryFn: () => api.get<never, { data: Bot[] }>('/bots'),
+  });
+
 export const useGetBot = (id: string) =>
   useQuery({
     queryKey: queryKeys.bots.byId(id),

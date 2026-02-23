@@ -64,7 +64,7 @@ func Register(c *gin.Context) {
 	tenant := newTenantFromEmail(user.Email)
 	models.DB.Create(&tenant)
 	models.DB.Create(&models.UserTenant{
-		UserID:   fmt.Sprintf("%d", user.ID),
+		UserID:   user.ID,
 		TenantID: tenant.ID,
 	})
 
@@ -99,7 +99,7 @@ func Login(c *gin.Context) {
 	// Look up tenant
 	var tenantID uint
 	var ut models.UserTenant
-	if err := models.DB.Where("user_id = ?", fmt.Sprintf("%d", user.ID)).First(&ut).Error; err == nil {
+	if err := models.DB.Where("user_id = ?", user.ID).First(&ut).Error; err == nil {
 		tenantID = ut.TenantID
 	}
 
@@ -163,7 +163,7 @@ func RefreshToken(c *gin.Context) {
 
 	var tenantID uint
 	var ut models.UserTenant
-	if err := models.DB.Where("user_id = ?", fmt.Sprintf("%d", user.ID)).First(&ut).Error; err == nil {
+	if err := models.DB.Where("user_id = ?", user.ID).First(&ut).Error; err == nil {
 		tenantID = ut.TenantID
 	}
 

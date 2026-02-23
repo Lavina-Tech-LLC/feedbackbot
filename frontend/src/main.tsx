@@ -7,6 +7,7 @@ import { Provider } from 'react-redux';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { store } from '@/redux/store';
 import { routeTree } from '@/routes/routeTree';
+import { ErrorBoundary } from '@/components/shared';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import '@/i18n';
@@ -33,8 +34,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <MantineProvider>
-          <Notifications />
-          <RouterProvider router={router} />
+          <ErrorBoundary>
+            <Notifications />
+            <RouterProvider router={router} />
+          </ErrorBoundary>
         </MantineProvider>
       </QueryClientProvider>
     </Provider>

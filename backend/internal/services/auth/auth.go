@@ -60,10 +60,16 @@ func Auth(c *gin.Context) {
 
 	// Fallback: if tenant_id is not in the JWT, check the local DB
 	if _, exists := c.Get("tenant_id"); !exists {
-		userID := fmt.Sprintf("%v", c.MustGet("user_id"))
-		var ut models.UserTenant
-		if err := models.DB.Where("user_id = ?", userID).First(&ut).Error; err == nil {
-			c.Set("tenant_id", ut.TenantID)
+		if rawID, ok := c.Get("user_id"); ok {
+			var userID uint
+			switch v := rawID.(type) {
+			case float64:
+				userID = uint(v)
+			}
+			var ut models.UserTenant
+			if err := models.DB.Where("user_id = ?", userID).First(&ut).Error; err == nil {
+				c.Set("tenant_id", ut.TenantID)
+			}
 		}
 	}
 

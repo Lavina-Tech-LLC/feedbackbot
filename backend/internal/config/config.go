@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+
 	"github.com/Lavina-Tech-LLC/lavinagopackage/v2/conf"
 )
 
@@ -27,5 +29,8 @@ type (
 )
 
 func init() {
+	if os.Getenv("FEEDBACKBOT_TEST") == "1" {
+		return
+	}
 	Confs = conf.Get[Conf]("conf/")
 }
