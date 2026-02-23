@@ -13,7 +13,7 @@ export const queryKeys = {
     byId: (id: string) => ['groups', id] as const,
   },
   feedbacks: {
-    byGroup: (groupId: string, adminOnly?: string, page?: number, dateFrom?: string, dateTo?: string) =>
-      ['feedbacks', groupId, adminOnly, page, dateFrom, dateTo] as const,
+    byGroup: (groupId: string, adminOnly?: string, page?: number, dateFrom?: string, dateTo?: string, search?: string) =>
+      ['feedbacks', groupId, adminOnly, page, dateFrom, dateTo, search] as const,
   },
 };

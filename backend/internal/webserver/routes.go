@@ -40,6 +40,7 @@ func setRoutes(router *gin.Engine) {
 
 	feedbacks := router.Group("/feedbacks", auth.Auth, services.TenantMiddleware)
 	feedbacks.GET("", svc_feedback.GetFeedbacks)
+	feedbacks.GET("/export", svc_feedback.ExportCSV)
 }
 
 func Listen() {

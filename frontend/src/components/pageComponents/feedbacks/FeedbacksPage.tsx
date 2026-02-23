@@ -12,10 +12,13 @@ import {
   SegmentedControl,
   Pagination,
   Select,
+  TextInput,
+  Button,
 } from '@mantine/core';
+import { useDebouncedValue } from '@mantine/hooks';
 import { DatePickerInput } from '@mantine/dates';
-import { IconLock, IconWorld, IconCalendar } from '@tabler/icons-react';
-import { useGetFeedbacks } from '@/service/feedback';
+import { IconLock, IconWorld, IconCalendar, IconSearch, IconDownload } from '@tabler/icons-react';
+import { useGetFeedbacks, getExportCsvUrl } from '@/service/feedback';
 import { useGetGroups } from '@/service/group';
 import { useCurrentTenant } from '@/utils/useCurrentTenant';
 import type { Feedback } from '@/types';
@@ -27,30 +30,51 @@ export function FeedbacksPage() {
   const [filter, setFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [dateRange, setDateRange] = useState<[Date | string | null, Date | string | null]>([null, null]);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch] = useDebouncedValue(search, 300);
 
   const tenantId = useCurrentTenant();
   const { data: groupsData } = useGetGroups(tenantId);
   const groups = (groupsData as { data: { ID: number; title: string }[] } | undefined)?.data ?? [];
 
-  const { data: feedbackData, isLoading } = useGetFeedbacks({
+  const feedbackParams = {
     groupId: selectedGroup,
     adminOnly: filter === 'admin_only' ? 'true' : filter === 'public' ? 'false' : undefined,
     page,
     limit: 20,
     dateFrom: dateRange[0] ? new Date(dateRange[0]).toISOString() : undefined,
     dateTo: dateRange[1] ? new Date(dateRange[1]).toISOString() : undefined,
-  });
+    search: debouncedSearch || undefined,
+  };
+
+  const { data: feedbackData, isLoading } = useGetFeedbacks(feedbackParams);
 
   const feedbacks: Feedback[] =
     (feedbackData as { data: { data: Feedback[]; total: number } } | undefined)?.data?.data ?? [];
   const total = (feedbackData as { data: { total: number } } | undefined)?.data?.total ?? 0;
   const totalPages = Math.ceil(total / 20);
 
+  const handleExport = () => {
+    const url = getExportCsvUrl(feedbackParams);
+    window.open(url, '_blank');
+  };
+
   return (
     <Container size="md" mt="xl">
       <Paper shadow="sm" p="xl" radius="md">
         <Stack>
-          <Title order={2}>{t('feedbacks.title')}</Title>
+          <Group justify="space-between">
+            <Title order={2}>{t('feedbacks.title')}</Title>
+            {selectedGroup && (
+              <Button
+                variant="light"
+                leftSection={<IconDownload size={16} />}
+                onClick={handleExport}
+              >
+                {t('feedbacks.exportCsv')}
+              </Button>
+            )}
+          </Group>
 
           <Group grow>
             <Select
@@ -77,6 +101,18 @@ export function FeedbacksPage() {
               leftSection={<IconCalendar size={16} />}
             />
           </Group>
+
+          {selectedGroup && (
+            <TextInput
+              placeholder={t('feedbacks.searchPlaceholder')}
+              leftSection={<IconSearch size={16} />}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.currentTarget.value);
+                setPage(1);
+              }}
+            />
+          )}
 
           {selectedGroup && (
             <SegmentedControl

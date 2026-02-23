@@ -13,7 +13,7 @@ window.matchMedia = window.matchMedia || ((query: string) => ({
 })) as typeof window.matchMedia;
 
 // Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
+(globalThis as any).ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
   disconnect() {}
