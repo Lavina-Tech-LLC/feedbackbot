@@ -3,7 +3,8 @@ package main
 import (
 	"log"
 
-	_ "github.com/Lavina-Tech-LLC/feedbackbot/internal/db"
+	"github.com/Lavina-Tech-LLC/feedbackbot/internal/config"
+	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/tgbot"
 	webServer "github.com/Lavina-Tech-LLC/feedbackbot/internal/webserver"
@@ -11,6 +12,9 @@ import (
 )
 
 func main() {
+	config.Init()
+	db.Init()
+
 	go webServer.Listen()
 
 	// Start polling for all verified bots
