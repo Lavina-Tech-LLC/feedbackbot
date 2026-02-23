@@ -12,7 +12,7 @@ type (
 
 	Bot struct {
 		TenantID    uint   `gorm:"not null" json:"tenant_id"`
-		Token       string `gorm:"not null" json:"-"`
+		Token       string `gorm:"uniqueIndex;not null" json:"-"`
 		BotUsername string `json:"bot_username"`
 		BotName     string `json:"bot_name"`
 		Verified    bool   `gorm:"default:false" json:"verified"`

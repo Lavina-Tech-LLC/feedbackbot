@@ -9,6 +9,7 @@ import (
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/services"
+	"github.com/Lavina-Tech-LLC/feedbackbot/internal/tgbot"
 	lvn "github.com/Lavina-Tech-LLC/lavinagopackage/v2"
 	"github.com/gin-gonic/gin"
 )
@@ -58,6 +59,13 @@ func CreateBot(c *gin.Context) {
 
 	tenantID := services.GetTenantID(c)
 
+	// Check for duplicate token
+	var existingBot models.Bot
+	if err := models.DB.Where("token = ?", req.Token).First(&existingBot).Error; err == nil {
+		c.Data(lvn.Res(409, "", "Bot with this token already exists"))
+		return
+	}
+
 	// Verify tenant exists
 	var tenant models.Tenant
 	if err := models.DB.First(&tenant, tenantID).Error; err != nil {
@@ -89,6 +97,8 @@ func CreateBot(c *gin.Context) {
 		lvn.GinErr(c, 500, err, "Failed to create bot")
 		return
 	}
+
+	go tgbot.StartPolling(bot)
 
 	c.Data(lvn.Res(201, bot, ""))
 }

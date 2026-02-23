@@ -1,4 +1,4 @@
-import { Group, Title, Anchor, Button, Burger, Drawer, Stack } from '@mantine/core';
+import { Group, Title, Anchor, Button, Burger, Drawer, Stack, Select } from '@mantine/core';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from '@tanstack/react-router';
@@ -6,8 +6,14 @@ import { IconMessageReport, IconLogout } from '@tabler/icons-react';
 import { useAppDispatch } from '@/redux/store';
 import { clearAuth } from '@/redux/slices';
 
+const languageOptions = [
+  { value: 'en', label: 'English' },
+  { value: 'ru', label: 'Русский' },
+  { value: 'uz', label: "O'zbekcha" },
+];
+
 export function Navbar() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [opened, { toggle, close }] = useDisclosure(false);
@@ -33,6 +39,14 @@ export function Navbar() {
       <Anchor component={Link} to="/feedbacks" onClick={close}>
         {t('nav.feedbacks')}
       </Anchor>
+      <Select
+        data={languageOptions}
+        value={i18n.language}
+        onChange={(val) => val && i18n.changeLanguage(val)}
+        w={130}
+        size="xs"
+        allowDeselect={false}
+      />
       <Button
         variant="subtle"
         color="red"
