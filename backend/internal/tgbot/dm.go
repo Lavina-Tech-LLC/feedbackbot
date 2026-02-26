@@ -17,7 +17,7 @@ func handlePrivateMessage(bot models.Bot, msg *Message) {
 	text := strings.TrimSpace(msg.Text)
 
 	if text == "/start" {
-		sendMessage(bot.Token, msg.Chat.ID, "👋 Welcome to FeedbackBot!\n\nSend me a message and I'll deliver it anonymously to your team admin.\n\nUse /adminOnly before your message to keep it visible only to the admin.")
+		sendMessage(bot.Token, msg.Chat.ID, "👋 FeedbackBot ga xush kelibsiz!\n\nMenga xabar yuboring va men uni anonim ravishda guruh adminingizga yetkazaman.\n\nFaqat admin ko'rishi uchun xabaringiz oldidan /adminOnly buyrug'ini ishlating.")
 		return
 	}
 
@@ -27,19 +27,19 @@ func handlePrivateMessage(bot models.Bot, msg *Message) {
 		adminOnly = true
 		text = strings.TrimSpace(text[len("/adminOnly"):])
 		if text == "" {
-			sendMessage(bot.Token, msg.Chat.ID, "Please write your feedback after /adminOnly.\n\nExample: /adminOnly I think we should improve our standup meetings.")
+			sendMessage(bot.Token, msg.Chat.ID, "Iltimos, /adminOnly buyrug'idan keyin fikringizni yozing.\n\nMisol: /adminOnly Men standup yig'ilishlarni yaxshilash kerak deb o'ylayman.")
 			return
 		}
 	}
 
 	if text == "" {
-		sendMessage(bot.Token, msg.Chat.ID, "Please send a text message with your feedback.")
+		sendMessage(bot.Token, msg.Chat.ID, "Iltimos, fikringizni matn ko'rinishida yuboring.")
 		return
 	}
 
 	const maxFeedbackLen = 4000
 	if len(text) > maxFeedbackLen {
-		sendMessage(bot.Token, msg.Chat.ID, "Your message is too long. Please keep it under 4000 characters.")
+		sendMessage(bot.Token, msg.Chat.ID, "Xabaringiz juda uzun. Iltimos, 4000 belgidan oshmasin.")
 		return
 	}
 
@@ -48,7 +48,7 @@ func handlePrivateMessage(bot models.Bot, msg *Message) {
 	models.DB.Where("bot_id = ? AND is_active = ?", bot.ID, true).Find(&groups)
 
 	if len(groups) == 0 {
-		sendMessage(bot.Token, msg.Chat.ID, "❌ No active groups found. The bot needs to be added to a group first.")
+		sendMessage(bot.Token, msg.Chat.ID, "❌ Faol guruhlar topilmadi. Bot avval guruhga qo'shilishi kerak.")
 		return
 	}
 
@@ -70,7 +70,7 @@ func handlePrivateMessage(bot models.Bot, msg *Message) {
 		})
 	}
 
-	sendMessageWithKeyboard(bot.Token, msg.Chat.ID, "📋 Which group is this feedback for?", keyboard)
+	sendMessageWithKeyboard(bot.Token, msg.Chat.ID, "📋 Bu fikr-mulohaza qaysi guruh uchun?", keyboard)
 }
 
 func submitFeedback(bot models.Bot, chatID int64, telegramUserID int64, group models.Group, message string, adminOnly bool) {
@@ -102,7 +102,7 @@ func submitFeedback(bot models.Bot, chatID int64, telegramUserID int64, group mo
 		var config models.FeedbackConfig
 		if err := models.DB.Where("group_id = ?", group.ID).First(&config).Error; err == nil {
 			if config.PostToGroup {
-				postText := fmt.Sprintf("📬 Anonymous Feedback:\n\n%s", message)
+				postText := fmt.Sprintf("📬 Anonim fikr-mulohaza:\n\n%s", message)
 				if config.ForumTopicID != nil && *config.ForumTopicID > 0 {
 					sendMessageToTopic(bot.Token, group.ChatID, *config.ForumTopicID, postText)
 				} else {
@@ -115,9 +115,9 @@ func submitFeedback(bot models.Bot, chatID int64, telegramUserID int64, group mo
 
 	// Confirm to user
 	if adminOnly {
-		sendMessage(bot.Token, chatID, "✅ Your feedback has been sent privately to the admin. It will NOT be posted in the group.")
+		sendMessage(bot.Token, chatID, "✅ Fikringiz adminga shaxsiy ravishda yuborildi. Guruhda e'lon qilinMAYDI.")
 	} else {
-		sendMessage(bot.Token, chatID, "✅ Your feedback has been submitted anonymously. Thank you!")
+		sendMessage(bot.Token, chatID, "✅ Fikringiz anonim ravishda yuborildi. Rahmat!")
 	}
 }
 

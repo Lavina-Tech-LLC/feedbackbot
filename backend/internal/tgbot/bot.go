@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Lavina-Tech-LLC/feedbackbot/internal/db/models"
@@ -69,8 +70,41 @@ func StopAll() {
 	close(stopCh)
 }
 
+func SetBotCommands(token string) error {
+	type botCommand struct {
+		Command     string `json:"command"`
+		Description string `json:"description"`
+	}
+	commands := []botCommand{
+		{Command: "start", Description: "Botni ishga tushirish"},
+		{Command: "adminonly", Description: "Faqat admin uchun fikr yuborish"},
+	}
+	body, err := json.Marshal(map[string]interface{}{
+		"commands": commands,
+	})
+	if err != nil {
+		return fmt.Errorf("marshal commands: %w", err)
+	}
+
+	apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/setMyCommands", token)
+	resp, err := http.Post(apiURL, "application/json", strings.NewReader(string(body)))
+	if err != nil {
+		return fmt.Errorf("setMyCommands request: %w", err)
+	}
+	defer resp.Body.Close()
+	io.ReadAll(resp.Body)
+
+	log.Printf("[tgbot] Bot commands registered successfully")
+	return nil
+}
+
 func StartPolling(bot models.Bot) {
 	log.Printf("[tgbot] Starting polling for bot @%s (ID: %d)", bot.BotUsername, bot.ID)
+
+	if err := SetBotCommands(bot.Token); err != nil {
+		log.Printf("[tgbot] Warning: failed to set bot commands: %v", err)
+	}
+
 	offset := int64(0)
 
 	for {
